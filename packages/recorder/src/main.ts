@@ -1,8 +1,12 @@
-import dgram from "node:dgram";
+import * as dgram from "node:dgram";
 import { ArgumentParser } from "argparse";
-import { AcarsMessage } from "./recorder.interface";
-import { initializeDatabase, openDatabase } from "./recorder.db";
-import chalk from "chalk";
+import {
+  addAcars,
+  closeDatabase,
+  initializeDatabase,
+  openDatabase,
+} from "./recorder.db";
+import * as chalk from "chalk";
 
 const DEFAULT_PORT = 16009;
 
@@ -38,7 +42,12 @@ const db = openDatabase(args.dbFile);
 const socket = dgram.createSocket("udp4");
 
 socket.on("message", message => {
-  const acarsMessage: AcarsMessage = JSON.parse(message.toString("utf-8"));
+  addAcars(db, JSON.parse(message.toString("utf-8")));
+});
+
+process.on("SIGINT", () => {
+  socket.close();
+  closeDatabase(db);
 });
 
 socket.bind(listenPort);
