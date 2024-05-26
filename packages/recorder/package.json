@@ -1,0 +1,32 @@
+{
+  "name": "acars-recorder-recorder",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc && rollup -c"
+  },
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "chalk": "^5.3.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.8",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/argparse": "^2.0.16",
+    "@types/node": "^20.12.12",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "rollup": "^4.18.0",
+    "source-map-support": "^0.5.21",
+    "ts-loader": "^9.4.3",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.3"
+  }
+}
