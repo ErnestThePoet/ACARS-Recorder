@@ -33,7 +33,6 @@ const args = argParser.parse_args();
 
 if (args.init) {
   initializeDatabase(args.dbFile);
-  process.exit(0);
 }
 
 const listenPort = parseInt(args.port) || DEFAULT_PORT;

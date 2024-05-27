@@ -23,9 +23,11 @@ export function initializeDatabase(path: string) {
 
   db.run(
     "CREATE TABLE acars (time REAL, freq TEXT, mode TEXT, label TEXT, block_id TEXT, reg_no TEXT, filght_no TEXT, msg_no TEXT, text TEXT, remark TEXT)",
+    () => {
+      db.close();
+      process.exit(0);
+    },
   );
-
-  db.close();
 }
 
 export function openDatabase(path: string) {
