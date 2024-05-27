@@ -22,7 +22,7 @@ export function initializeDatabase(path: string) {
   const db = new sqlite3.Database(path);
 
   db.run(
-    "CREATE TABLE acars (id INTEGER PRIMARY KEY AUTO_INCREMENT, time REAL, freq TEXT, mode TEXT, label TEXT, block_id TEXT, reg_no TEXT, filght_no TEXT, msg_no TEXT, text TEXT, remark TEXT)",
+    "CREATE TABLE acars (time REAL, freq TEXT, mode TEXT, label TEXT, block_id TEXT, reg_no TEXT, filght_no TEXT, msg_no TEXT, text TEXT, remark TEXT)",
   );
 
   db.close();
