@@ -24,7 +24,7 @@ export interface AcarsMessage {
   sublabel?: string;
   mfi?: string;
   assstat?: string;
-  libscars?: string;
+  libacars?: any;
   app: {
     name: "acarsdec";
     ver: string;
