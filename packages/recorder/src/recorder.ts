@@ -7,6 +7,7 @@ import {
   openDatabase,
 } from "./recorder.db";
 import * as chalk from "chalk";
+import { AcarsMessage } from "./recorder.interface";
 
 const DEFAULT_PORT = 16009;
 
@@ -43,7 +44,9 @@ const socket = dgram.createSocket("udp4");
 
 socket.on("message", message => {
   try {
-    addAcars(db, JSON.parse(message.toString("utf-8")));
+    const acarsMessage: AcarsMessage = JSON.parse(message.toString("utf-8"));
+    console.log(chalk.blueBright(JSON.stringify(acarsMessage, null, 2)));
+    addAcars(db, acarsMessage);
   } catch (e) {
     console.error(e);
   }
