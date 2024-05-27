@@ -1,11 +1,6 @@
 import * as dgram from "node:dgram";
 import { ArgumentParser } from "argparse";
-import {
-  addAcars,
-  closeDatabase,
-  initializeDatabase,
-  openDatabase,
-} from "./recorder.db";
+import { addAcars, closeDatabase, openDatabase } from "./recorder.db";
 import * as chalk from "chalk";
 import { AcarsMessage } from "./recorder.interface";
 
@@ -19,22 +14,12 @@ argParser.add_argument("dbFile", {
   help: "Path to sqlite3 database file",
 });
 
-argParser.add_argument("-i", "--init", {
-  action: "store_true",
-  help: "Initialize an empty database",
-});
-
 argParser.add_argument("-p", "--port", {
   help: `UDP listening port, defaults to ${DEFAULT_PORT}`,
   default: DEFAULT_PORT,
 });
 
 const args = argParser.parse_args();
-
-if (args.init) {
-  initializeDatabase(args.dbFile);
-  process.exit(0);
-}
 
 const listenPort = parseInt(args.port) || DEFAULT_PORT;
 
