@@ -45,6 +45,7 @@ const socket = dgram.createSocket("udp4");
 socket.on("message", message => {
   try {
     const acarsMessage: AcarsMessage = JSON.parse(message.toString("utf-8"));
+    console.log(chalk.blueBright("-".repeat(80)));
     console.log(chalk.blueBright(JSON.stringify(acarsMessage, null, 2)));
     addAcars(db, acarsMessage);
   } catch (e) {
