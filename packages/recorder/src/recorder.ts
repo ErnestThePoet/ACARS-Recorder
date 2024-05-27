@@ -25,7 +25,7 @@ argParser.add_argument("-i", "--init", {
 });
 
 argParser.add_argument("-p", "--port", {
-  help: "UDP listening port, defaults to 16009",
+  help: `UDP listening port, defaults to ${DEFAULT_PORT}`,
   default: DEFAULT_PORT,
 });
 
