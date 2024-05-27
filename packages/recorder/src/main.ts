@@ -42,7 +42,11 @@ const db = openDatabase(args.dbFile);
 const socket = dgram.createSocket("udp4");
 
 socket.on("message", message => {
-  addAcars(db, JSON.parse(message.toString("utf-8")));
+  try {
+    addAcars(db, JSON.parse(message.toString("utf-8")));
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 process.on("SIGINT", () => {
