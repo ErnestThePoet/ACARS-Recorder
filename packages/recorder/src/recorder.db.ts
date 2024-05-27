@@ -24,6 +24,7 @@ export function initializeDatabase(path: string) {
       "error INT, " +
       "mode TEXT, " +
       "label TEXT, " +
+      "sublabel TEXT, " +
       "block_id TEXT, " +
       "ack TEXT, " +
       "reg_no TEXT, " +
@@ -50,7 +51,7 @@ export function openDatabase(path: string): sqlite3.Database {
 
 export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
   const statement = db.prepare(
-    `INSERT INTO acars VALUES (${new Array(13).fill("?").join(",")})`,
+    `INSERT INTO acars VALUES (${new Array(14).fill("?").join(",")})`,
   );
 
   const insertOne = db.transaction((msg: AcarsMessage) => {
@@ -62,6 +63,7 @@ export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
       msg.error,
       msg.mode,
       msg.label,
+      msg.sublabel ?? "",
       msg.block_id ?? "",
       msg.ack === false ? "NACK" : msg.ack,
       msg.tail ?? "",
