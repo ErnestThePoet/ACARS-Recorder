@@ -71,7 +71,7 @@ export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
       msg.flight ?? "",
       msg.msgno ?? "",
       msg.text ?? "",
-      msg.libacars ? JSON.stringify(msg.libacars, null, 2) : "",
+      msg.libacars ? JSON.stringify(msg.libacars) : "",
     );
   });
 
