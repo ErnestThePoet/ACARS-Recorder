@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/main"
   },
   "dependencies": {
     "argparse": "^2.0.1",
