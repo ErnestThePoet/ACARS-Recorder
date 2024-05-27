@@ -52,7 +52,7 @@ export function openDatabase(path: string): sqlite3.Database {
 
 export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
   const statement = db.prepare(
-    `INSERT INTO acars VALUES (${new Array(14).fill("?").join(",")})`,
+    `INSERT INTO acars VALUES (${new Array(15).fill("?").join(",")})`,
   );
 
   const insertOne = db.transaction((msg: AcarsMessage) => {
