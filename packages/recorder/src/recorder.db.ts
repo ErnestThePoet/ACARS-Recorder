@@ -1,13 +1,7 @@
 import * as fs from "node:fs";
-import { Database, verbose as sqlite3Verbose } from "sqlite3";
+import * as sqlite3 from "better-sqlite3";
 import * as chalk from "chalk";
 import { AcarsMessage } from "./recorder.interface";
-
-const sqlite3 = sqlite3Verbose();
-
-function Q(value: string | number) {
-  return `"${value}"`;
-}
 
 export function initializeDatabase(path: string) {
   if (fs.existsSync(path)) {
@@ -19,47 +13,51 @@ export function initializeDatabase(path: string) {
     process.exit(1);
   }
 
-  const db = new sqlite3.Database(path);
+  const db = sqlite3(path);
 
-  db.run(
+  db.exec(
     "CREATE TABLE acars (time REAL, freq TEXT, mode TEXT, label TEXT, block_id TEXT, reg_no TEXT, filght_no TEXT, msg_no TEXT, text TEXT, remark TEXT)",
-    () => {
-      db.close();
-      process.exit(0);
-    },
+  );
+
+  db.close();
+
+  console.log(
+    chalk.green(`Successfully created empty database file "${path}"`),
   );
 }
 
-export function openDatabase(path: string) {
+export function openDatabase(path: string): sqlite3.Database {
   if (!fs.existsSync(path)) {
     console.log(chalk.red(`Cannot find database file "${path}"`));
     process.exit(1);
   }
 
-  return new sqlite3.Database(path);
+  return sqlite3(path);
 }
 
-export function addAcars(db: Database, acars: AcarsMessage) {
-  db.serialize(() => {
-    const statement = db.prepare("INSERT INTO acars VALUES (?)");
+export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
+  const statement = db.prepare(
+    "INSERT INTO acars VALUES (?,?,?,?,?,?,?,?,?,?)",
+  );
+
+  const insertOne = db.transaction((msg: AcarsMessage) => {
     statement.run(
-      [
-        acars.timestamp,
-        Q(acars.freq.toFixed(3)),
-        Q(acars.mode),
-        Q(acars.label),
-        Q(acars.block_id ?? ""),
-        Q(acars.tail ?? ""),
-        Q(acars.flight ?? ""),
-        Q(acars.msgno ?? ""),
-        Q(acars.text ?? ""),
-        Q(""),
-      ].join(","),
+      msg.timestamp,
+      msg.freq.toFixed(3),
+      msg.mode,
+      msg.label,
+      msg.block_id ?? "",
+      msg.tail ?? "",
+      msg.flight ?? "",
+      msg.msgno ?? "",
+      msg.text ?? "",
+      "",
     );
-    statement.finalize();
   });
+
+  insertOne(acarsMessage);
 }
 
-export function closeDatabase(db: Database) {
+export function closeDatabase(db: sqlite3.Database) {
   db.close();
 }

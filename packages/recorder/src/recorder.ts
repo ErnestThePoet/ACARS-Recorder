@@ -33,6 +33,7 @@ const args = argParser.parse_args();
 
 if (args.init) {
   initializeDatabase(args.dbFile);
+  process.exit(0);
 }
 
 const listenPort = parseInt(args.port) || DEFAULT_PORT;
@@ -55,6 +56,7 @@ socket.on("message", message => {
 process.on("SIGINT", () => {
   socket.close();
   closeDatabase(db);
+  process.exit(0);
 });
 
 socket.bind(listenPort);
