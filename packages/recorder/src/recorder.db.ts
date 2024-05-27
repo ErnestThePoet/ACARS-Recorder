@@ -16,7 +16,20 @@ export function initializeDatabase(path: string) {
   const db = sqlite3(path);
 
   db.exec(
-    "CREATE TABLE acars (time REAL, freq TEXT, mode TEXT, label TEXT, block_id TEXT, reg_no TEXT, filght_no TEXT, msg_no TEXT, text TEXT, remark TEXT)",
+    "CREATE TABLE acars (" +
+      "time REAL, " +
+      "freq TEXT, " +
+      "channel INT, " +
+      "level REAL, " +
+      "error INT, " +
+      "mode TEXT, " +
+      "label TEXT, " +
+      "block_id TEXT, " +
+      "ack TEXT, " +
+      "reg_no TEXT, " +
+      "filght_no TEXT, " +
+      "msg_no TEXT, " +
+      "text TEXT)",
   );
 
   db.close();
@@ -37,21 +50,24 @@ export function openDatabase(path: string): sqlite3.Database {
 
 export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
   const statement = db.prepare(
-    "INSERT INTO acars VALUES (?,?,?,?,?,?,?,?,?,?)",
+    `INSERT INTO acars VALUES (${new Array(13).fill("?").join(",")})`,
   );
 
   const insertOne = db.transaction((msg: AcarsMessage) => {
     statement.run(
       msg.timestamp,
       msg.freq.toFixed(3),
+      msg.channel,
+      msg.level,
+      msg.error,
       msg.mode,
       msg.label,
       msg.block_id ?? "",
+      msg.ack === false ? "NACK" : msg.ack,
       msg.tail ?? "",
       msg.flight ?? "",
       msg.msgno ?? "",
       msg.text ?? "",
-      "",
     );
   });
 

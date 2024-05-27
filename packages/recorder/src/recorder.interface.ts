@@ -8,7 +8,7 @@ export interface AcarsMessage {
   mode: string;
   label: string;
   block_id?: string;
-  ack?: false | string;
+  ack: false | string;
   tail?: string;
   flight?: string;
   msgno?: string;
