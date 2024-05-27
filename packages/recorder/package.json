@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/main"
+    "start": "node dist/recorder"
   },
   "dependencies": {
     "argparse": "^2.0.1",
