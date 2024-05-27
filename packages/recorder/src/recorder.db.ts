@@ -30,7 +30,8 @@ export function initializeDatabase(path: string) {
       "reg_no TEXT, " +
       "filght_no TEXT, " +
       "msg_no TEXT, " +
-      "text TEXT)",
+      "text TEXT, " +
+      "libacars TEXT)",
   );
 
   db.close();
@@ -70,6 +71,7 @@ export function addAcars(db: sqlite3.Database, acarsMessage: AcarsMessage) {
       msg.flight ?? "",
       msg.msgno ?? "",
       msg.text ?? "",
+      msg.libacars ? JSON.stringify(msg.libacars, null, 2) : "",
     );
   });
 
