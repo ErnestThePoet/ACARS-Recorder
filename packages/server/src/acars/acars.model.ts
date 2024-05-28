@@ -50,3 +50,21 @@ export class Acars extends Model {
   @Column(DataTypes.TEXT)
   libacars: string;
 }
+
+export interface AcarsEntity {
+  time: number;
+  freq: string;
+  channel: number;
+  level: number;
+  error: number;
+  mode: string;
+  label: string;
+  subLabel: string;
+  blockId: string;
+  ack: string;
+  regNo: string;
+  flightNo: string;
+  msgNo: string;
+  text: string;
+  libacars: string;
+}
