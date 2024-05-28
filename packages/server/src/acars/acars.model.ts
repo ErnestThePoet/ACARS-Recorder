@@ -27,44 +27,45 @@ export class Acars extends Model {
   label: string;
 
   @Column(DataTypes.CHAR(2))
-  subLabel: string;
+  subLabel: string | null;
 
   @Column(DataTypes.CHAR(1))
-  blockId: string;
+  blockId: string | null;
 
   @Column(DataTypes.CHAR(1))
-  ack: string;
+  ack: string | null;
 
   @Column(DataTypes.STRING(10))
-  regNo: string;
+  regNo: string | null;
 
   @Column(DataTypes.STRING(10))
-  flightNo: string;
+  flightNo: string | null;
 
   @Column(DataTypes.CHAR(4))
-  msgNo: string;
+  msgNo: string | null;
 
   @Column(DataTypes.TEXT)
-  text: string;
+  text: string | null;
 
   @Column(DataTypes.TEXT)
-  libacars: string;
+  libacars: string | null;
 }
 
-export interface AcarsEntity {
-  time: number;
-  freq: string;
-  channel: number;
-  level: number;
-  error: number;
-  mode: string;
-  label: string;
-  subLabel: string;
-  blockId: string;
-  ack: string;
-  regNo: string;
-  flightNo: string;
-  msgNo: string;
-  text: string;
-  libacars: string;
-}
+export type AcarsEntity = Pick<
+  Acars,
+  | "time"
+  | "freq"
+  | "channel"
+  | "level"
+  | "error"
+  | "mode"
+  | "label"
+  | "subLabel"
+  | "blockId"
+  | "ack"
+  | "regNo"
+  | "flightNo"
+  | "msgNo"
+  | "text"
+  | "libacars"
+>;
