@@ -2,12 +2,12 @@ import { IsNumberString } from "class-validator";
 
 export class GetAllMessagesInTimeRangeDto {
   @IsNumberString(null, {
-    message: '"start" field invalid',
+    message: '"startS" field invalid',
   })
-  start: string;
+  startS: string;
 
   @IsNumberString(null, {
-    message: '"end" field invalid',
+    message: '"endS" field invalid',
   })
-  end: string;
+  endS: string;
 }

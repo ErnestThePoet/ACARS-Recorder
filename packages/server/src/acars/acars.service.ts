@@ -20,8 +20,8 @@ export class AcarsService {
   async getAllMessagesInTimeRange(
     dto: GetAllMessagesInTimeRangeDto,
   ): Promise<ResponseType<GetAcarsMessageElement[]>> {
-    const startS = parseFloat(dto.start);
-    const endS = parseFloat(dto.end);
+    const startS = parseFloat(dto.startS);
+    const endS = parseFloat(dto.endS);
 
     const result = await this.acarsModel.findAll({
       where: {
@@ -58,8 +58,8 @@ export class AcarsService {
     dto: GetAllMessagesInTimeRangeDto,
     res: Response,
   ) {
-    const startS = parseFloat(dto.start);
-    const endS = parseFloat(dto.end);
+    const startS = parseFloat(dto.startS);
+    const endS = parseFloat(dto.endS);
 
     const result = await this.acarsModel.findAll({
       where: {

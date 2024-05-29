@@ -1,0 +1,4 @@
+{
+  "ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE": "/acars/messages_in_time_range",
+  "ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE": "/acars/export_messages_in_time_range"
+}

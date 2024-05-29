@@ -1,0 +1,37 @@
+.nav {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 20px;
+
+  width: 100%;
+
+  background-color: white;
+
+  box-shadow: 0px 3px 8px 0px #ccc;
+}
+
+@media (width>=800px) {
+  .flexTime {
+    position: absolute;
+    right: 30px;
+    color: #333;
+  }
+}
+
+@media (width<800px) {
+  .flexTime {
+    display: none;
+  }
+}
+
+.spanTime {
+  font-size: 16px;
+  margin-right: 5px;
+}
+
+.spanTimeZone {
+  font-size: 13px;
+}
