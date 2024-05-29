@@ -13,6 +13,10 @@ import {
   formatTimeyMdHms,
 } from "src/common/utils/date-time.util";
 import { AcarsDatasetManager } from "src/common/acars-dataset-manager/acars-dataset-manager";
+import {
+  LOCAL_TIMEZONE_NAME,
+  LOCAL_TIMEZONE_OFFSET,
+} from "src/common/constants";
 
 @Injectable()
 export class AcarsService {
@@ -88,8 +92,8 @@ export class AcarsService {
     const sheet = workbook.addWorksheet("ACARS");
 
     sheet.addRow([
-      "UTC Time",
-      "CST Time",
+      "UTC",
+      LOCAL_TIMEZONE_NAME,
       "Frequency",
       "Channel",
       "Level",
@@ -109,7 +113,7 @@ export class AcarsService {
     sheet.addRows(
       result.map(x => [
         formatTimeyMdHms(x.time, "+00:00"),
-        formatTimeyMdHms(x.time, "+08:00"),
+        formatTimeyMdHms(x.time, LOCAL_TIMEZONE_OFFSET),
         x.freq,
         x.channel,
         x.level,
@@ -134,7 +138,7 @@ export class AcarsService {
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=" +
-        `${formatTimeyMd(startS, "+08:00")}-${formatTimeyMd(endS, "+08:00")}.xlsx`,
+        `${formatTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.xlsx`,
     );
 
     await workbook.xlsx.write(res);
