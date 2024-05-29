@@ -432,6 +432,7 @@ export default function Home() {
 
           <Button
             className={styles.btnExport}
+            disabled={messages.length === 0}
             onClick={() => {
               window.open(
                 getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
