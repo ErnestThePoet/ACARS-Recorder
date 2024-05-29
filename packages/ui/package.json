@@ -1,10 +1,11 @@
 {
   "name": "acars-recorder-ui",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build-win": "next build && xcopy /s /i /y \"./public\" \"./.next/standalone/public\" && xcopy /s /i /y \"./.next/static\" \"./.next/standalone/.next/static\"",
+    "build-linux": "next build && cp \"./public\" \"./.next/standalone/public\" && cp \"./.next/static\" \"./.next/standalone/.next/static\"",
     "start": "next start",
     "lint": "next lint"
   },
