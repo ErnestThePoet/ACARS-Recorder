@@ -385,62 +385,67 @@ export default function Home() {
     <main className={styles.main}>
       <Nav />
       <Flex className={styles.flexContentWrapper} vertical gap={20}>
-        <Flex justify="space-between" gap={20} wrap>
-          <Flex gap={20} wrap>
-            <Flex gap={10}>
-              <DatePicker.RangePicker
-                showTime
-                value={timeRange}
-                onChange={range => {
-                  if (range && range[0] && range[1]) {
-                    setTimeRange(range as [Dayjs, Dayjs]);
-                  }
-                }}
-              />
+        <Flex gap={20} align="center" wrap>
+          <Flex gap={10}>
+            <DatePicker.RangePicker
+              showTime
+              value={timeRange}
+              onChange={range => {
+                if (range && range[0] && range[1]) {
+                  setTimeRange(range as [Dayjs, Dayjs]);
+                }
+              }}
+            />
 
-              <Button
-                onClick={syncMessages}
-                type="primary"
-                icon={<SyncOutlined />}
-                loading={filterLoading}>
-                Sync
-              </Button>
-            </Flex>
-
-            <Flex gap={10}>
-              <Input
-                className={styles.inSearch}
-                value={searchKey}
-                onChange={e => setSearchKey(e.target.value)}
-                allowClear
-              />
-
-              <Button
-                onClick={applySearch}
-                type="primary"
-                icon={<SearchOutlined />}>
-                Search
-              </Button>
-            </Flex>
+            <Button
+              onClick={syncMessages}
+              type="primary"
+              icon={<SyncOutlined />}
+              loading={filterLoading}>
+              Sync
+            </Button>
           </Flex>
 
           <Flex gap={10}>
+            <Input
+              className={styles.inSearch}
+              value={searchKey}
+              onChange={e => setSearchKey(e.target.value)}
+              allowClear
+            />
+
             <Button
-              onClick={() => {
-                window.open(
-                  getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
-                    "?" +
-                    new URLSearchParams({
-                      startS: timeRange[0].unix().toString(),
-                      endS: timeRange[1].unix().toString(),
-                    }),
-                );
-              }}
+              onClick={applySearch}
               type="primary"
-              icon={<ExportOutlined />}>
-              Export
+              icon={<SearchOutlined />}>
+              Search
             </Button>
           </Flex>
+
+          <Tag color={displayMessages.length ? "green" : "default"}>
+            {displayMessages.length
+              ? displayMessages.length > 1
+                ? `${displayMessages.length} Messages`
+                : `${displayMessages.length} Message`
+              : "No Message"}
+          </Tag>
+
+          <Button
+            className={styles.btnExport}
+            onClick={() => {
+              window.open(
+                getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
+                  "?" +
+                  new URLSearchParams({
+                    startS: timeRange[0].unix().toString(),
+                    endS: timeRange[1].unix().toString(),
+                  }),
+              );
+            }}
+            type="primary"
+            icon={<ExportOutlined />}>
+            Export
+          </Button>
         </Flex>
 
         <Table
