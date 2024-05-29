@@ -10,8 +10,39 @@
   padding: 20px;
 
   flex: 1;
+
+  overflow: hidden;
 }
 
 .inSearch {
   width: 200px;
+}
+
+.tableAcars {
+  flex: 1;
+
+  overflow: auto;
+}
+
+.withTooltip {
+  cursor: pointer;
+}
+
+.divAcarsText {
+  text-align: start;
+  white-space: pre-wrap;
+  word-break: break-all;
+
+  padding: 8px;
+
+  border-radius: 8px;
+
+  background-color: rgb(248, 249, 251);
+}
+
+.divLibacars {
+  @extend .divAcarsText;
+
+  max-height: 480px;
+  overflow-y: auto;
 }

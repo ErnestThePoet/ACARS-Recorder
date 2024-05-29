@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "antd/dist/reset.css";
+import "./App.scss";
 
 export const metadata: Metadata = {
   title: "ACARS Managenent Center",

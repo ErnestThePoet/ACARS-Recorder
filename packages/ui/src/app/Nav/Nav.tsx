@@ -2,10 +2,14 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./Nav.module.scss";
-import { formatTimeHms } from "@/modules/utils/date-time.util";
+import { formatMsTimeHms } from "@/modules/utils/date-time.util";
 import { Flex } from "antd";
 import classNames from "classnames";
 import { noto_Sans_Mono, palanquin_Dark } from "../fonts";
+import {
+  LOCAL_TIMEZONE_NAME,
+  LOCAL_TIMEZONE_OFFSET,
+} from "@/modules/constants";
 
 const Nav: React.FC = () => {
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -30,17 +34,15 @@ const Nav: React.FC = () => {
         className={classNames(styles.flexTime, noto_Sans_Mono.className)}
         vertical>
         <Flex align="flex-end">
-          <span className={styles.spanTime}>
-            {formatTimeHms(time, "+00:00")}
-          </span>
+          <span className={styles.spanTime}>{formatMsTimeHms(time)}</span>
           <span className={styles.spanTimeZone}>UTC</span>
         </Flex>
 
         <Flex align="flex-end">
           <span className={styles.spanTime}>
-            {formatTimeHms(time, "+08:00")}
+            {formatMsTimeHms(time, LOCAL_TIMEZONE_OFFSET)}
           </span>
-          <span className={styles.spanTimeZone}>CST</span>
+          <span className={styles.spanTimeZone}>{LOCAL_TIMEZONE_NAME}</span>
         </Flex>
       </Flex>
     </nav>
