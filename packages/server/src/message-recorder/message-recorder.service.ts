@@ -21,7 +21,6 @@ export class MessageRecorderService {
         await this.acarsModel.create({
           time: acarsMessage.timestamp,
           freq: acarsMessage.freq.toFixed(3),
-          channel: acarsMessage.channel,
           level: acarsMessage.level,
           error: acarsMessage.error,
           mode: acarsMessage.mode,

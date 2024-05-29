@@ -11,9 +11,6 @@ export class Acars extends Model {
   @Column(DataTypes.CHAR(7))
   freq: string;
 
-  @Column(DataTypes.INTEGER)
-  channel: number;
-
   @Column(DataTypes.DOUBLE)
   level: number;
 
@@ -55,7 +52,6 @@ export type AcarsEntity = Pick<
   Acars,
   | "time"
   | "freq"
-  | "channel"
   | "level"
   | "error"
   | "mode"
