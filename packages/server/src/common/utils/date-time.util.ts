@@ -10,13 +10,16 @@ export function getNow(): number {
   return new Date().getTime();
 }
 
-export function formatSTimeyMdHms(timeS: number, timeZone: string) {
+export function formatSTimeyMdHms(timeS: number, timeZone?: string) {
   return format(
-    toZonedTime(timeS * MS_PER_SEC, timeZone),
+    toZonedTime(timeS * MS_PER_SEC, timeZone ?? "+00:00"),
     "yyyy/MM/dd HH:mm:ss",
   );
 }
 
-export function formatSTimeyMd(timeS: number, timeZone: string) {
-  return format(toZonedTime(timeS * MS_PER_SEC, timeZone), "yyyyMMdd");
+export function formatSTimeyMd(timeS: number, timeZone?: string) {
+  return format(
+    toZonedTime(timeS * MS_PER_SEC, timeZone ?? "+00:00"),
+    "yyyyMMdd",
+  );
 }

@@ -110,7 +110,7 @@ export class AcarsService {
 
     sheet.addRows(
       result.map(x => [
-        formatSTimeyMdHms(x.time, "+00:00"),
+        formatSTimeyMdHms(x.time),
         formatSTimeyMdHms(x.time, LOCAL_TIMEZONE_OFFSET),
         x.freq,
         x.level,
