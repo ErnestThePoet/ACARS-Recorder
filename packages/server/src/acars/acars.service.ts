@@ -12,10 +12,14 @@ import {
   formatTimeyMd,
   formatTimeyMdHms,
 } from "src/common/utils/date-time.util";
+import { AcarsDatasetManager } from "src/common/acars-dataset-manager/acars-dataset-manager";
 
 @Injectable()
 export class AcarsService {
-  constructor(@InjectModel(Acars) private acarsModel: typeof Acars) {}
+  constructor(
+    @InjectModel(Acars) private acarsModel: typeof Acars,
+    private readonly acarsDatasetManager: AcarsDatasetManager,
+  ) {}
 
   async getAllMessagesInTimeRange(
     dto: GetAllMessagesInTimeRangeDto,
@@ -50,6 +54,16 @@ export class AcarsService {
         msgNo: x.msgNo,
         text: x.text,
         libacars: x.libacars,
+
+        labelDescription: this.acarsDatasetManager.getLabelDescription(x.label),
+        aircraftDescription:
+          x.regNo === null
+            ? null
+            : this.acarsDatasetManager.getAircraftDescription(x.regNo),
+        airlineDescription:
+          x.flightNo === null
+            ? null
+            : this.acarsDatasetManager.getAirlineDescription(x.flightNo),
       })),
     );
   }
