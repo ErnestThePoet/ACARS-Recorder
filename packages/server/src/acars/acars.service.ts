@@ -9,8 +9,8 @@ import { Op } from "sequelize";
 import { Response } from "express";
 import * as ExcelJS from "exceljs";
 import {
-  formatTimeyMd,
-  formatTimeyMdHms,
+  formatSTimeyMd,
+  formatSTimeyMdHms,
 } from "src/common/utils/date-time.util";
 import { AcarsDatasetManager } from "src/common/acars-dataset-manager/acars-dataset-manager";
 import {
@@ -110,8 +110,8 @@ export class AcarsService {
 
     sheet.addRows(
       result.map(x => [
-        formatTimeyMdHms(x.time, "+00:00"),
-        formatTimeyMdHms(x.time, LOCAL_TIMEZONE_OFFSET),
+        formatSTimeyMdHms(x.time, "+00:00"),
+        formatSTimeyMdHms(x.time, LOCAL_TIMEZONE_OFFSET),
         x.freq,
         x.level,
         x.error,
@@ -135,7 +135,7 @@ export class AcarsService {
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=" +
-        `${formatTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.xlsx`,
+        `${formatSTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatSTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.xlsx`,
     );
 
     await workbook.xlsx.write(res);
