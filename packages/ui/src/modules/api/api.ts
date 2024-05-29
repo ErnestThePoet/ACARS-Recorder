@@ -4,7 +4,7 @@ import apiObject from "./api.json";
 import axios from "axios";
 
 export const getApiUrl = (api: keyof typeof apiObject) => {
-  return "http://192.168.31.43:16010/api" + apiObject[api];
+  return "/api" + apiObject[api];
 };
 
 // Axios wrappers
