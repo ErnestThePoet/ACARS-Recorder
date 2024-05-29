@@ -11,8 +11,6 @@ async function bootstrap() {
     .useGlobalFilters(new HttpExceptionFilter());
 
   app.set("trust proxy", "loopback");
-  // TODO disable cors
-  app.enableCors();
 
   await app.listen(16010);
 }

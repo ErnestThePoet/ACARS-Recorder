@@ -10,6 +10,7 @@ import { MessageRecorderModule } from "./message-recorder/message-recorder.modul
       storage: "database/acars.db",
       autoLoadModels: true,
       synchronize: true,
+      logging: false,
     }),
     AcarsModule,
     MessageRecorderModule,
