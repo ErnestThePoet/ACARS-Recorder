@@ -86,7 +86,7 @@ export class AcarsDatasetManager {
 
     if (flightNo.match(/^[A-Z]{3}/)) {
       airlineCode = flightNo.substring(0, 3);
-    } else if (flightNo.match(/^[A-Z]{2}/)) {
+    } else if (flightNo.match(/^(([A-Z]{2})|(\d[A-Z])|([A-Z]\d))/)) {
       airlineCode = flightNo.substring(0, 2);
     }
 
