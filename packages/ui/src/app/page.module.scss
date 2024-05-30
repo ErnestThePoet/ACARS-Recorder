@@ -22,7 +22,7 @@
   margin-left: auto;
 }
 
-.tableAcars {
+.tableListAcars {
   flex: 1;
 
   overflow: auto;
@@ -37,11 +37,29 @@
   white-space: pre-wrap;
   word-break: break-all;
 
-  padding: 8px;
+  padding: 5px 10px;
 
   border-radius: 8px;
 
   background-color: rgb(248, 249, 251);
+}
+
+.divAcarsBriefInfo {
+  text-align: start;
+  white-space: pre-wrap;
+  word-break: break-all;
+
+  padding: 5px 10px;
+}
+
+.divAcarsBriefLibacarsButtonWrapper {
+  @extend .divAcarsBriefInfo;
+  padding-bottom: 0;
+}
+
+.btnAcarsBriefLibacars {
+  padding: 0;
+  height: fit-content;
 }
 
 .divLibacars {

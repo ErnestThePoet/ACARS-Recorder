@@ -2,9 +2,11 @@
 
 import {
   Button,
+  Checkbox,
   DatePicker,
   Flex,
   Input,
+  List,
   Modal,
   Table,
   Tag,
@@ -96,6 +98,8 @@ export default function Home() {
   const [displayMessages, setDisplayMessages] = useState<AcarsMessage[]>([]);
 
   const [filterLoading, setFilterLoading] = useState(false);
+
+  const [brief, setBrief] = useState(false);
 
   const [libacarsModalOpen, setLibacarsModalOpen] = useState(false);
   const [libacars, setLibacars] = useState("{}");
@@ -430,6 +434,10 @@ export default function Home() {
               : "No Message"}
           </Tag>
 
+          <Checkbox checked={brief} onChange={e => setBrief(e.target.checked)}>
+            Brief
+          </Checkbox>
+
           <Button
             className={styles.btnExport}
             disabled={messages.length === 0}
@@ -449,16 +457,98 @@ export default function Home() {
           </Button>
         </Flex>
 
-        <Table
-          className={styles.tableAcars}
-          rowKey="id"
-          columns={columns}
-          dataSource={displayMessages}
-          pagination={{
-            pageSizeOptions: [10, 20, 30, 50, 100, 200],
-            showQuickJumper: true,
-          }}
-        />
+        {brief ? (
+          <List
+            className={styles.tableListAcars}
+            bordered
+            dataSource={displayMessages}
+            renderItem={item => (
+              <List.Item className={noto_Sans_Mono.className}>
+                <div>
+                  <div className={styles.divAcarsBriefInfo}>
+                    <div>{`${formatSTimeyMdHms(
+                      item.time,
+                    )} UTC / ${formatSTimeyMdHms(
+                      item.time,
+                      LOCAL_TIMEZONE_OFFSET,
+                    )} ${LOCAL_TIMEZONE_NAME}`}</div>
+
+                    <div>
+                      <Tooltip title={item.airlineDescription}>
+                        <span
+                          className={classNames({
+                            [styles.withTooltip]:
+                              item.airlineDescription !== null,
+                          })}>
+                          {`${item.flightNo ? item.flightNo + " " : ""}`}
+                        </span>
+                      </Tooltip>
+
+                      <Tooltip title={item.aircraftDescription}>
+                        <span
+                          className={classNames({
+                            [styles.withTooltip]:
+                              item.aircraftDescription !== null,
+                          })}>
+                          {`${item.regNo ? item.regNo + " " : ""}`}
+                        </span>
+                      </Tooltip>
+
+                      {`${item.freq}MHz `}
+
+                      <Tooltip title={item.labelDescription}>
+                        <span
+                          className={classNames({
+                            [styles.withTooltip]:
+                              item.labelDescription !== null,
+                          })}>
+                          {item.label}
+                        </span>
+                      </Tooltip>
+
+                      {`${item.subLabel ? "/" + item.subLabel : ""}${
+                        item.msgNo ? " " + item.msgNo : ""
+                      }`}
+                    </div>
+
+                    <div>{`L:${item.level} E:${item.error} M:${item.mode}${
+                      item.blockId ? " BID:" + item.blockId : ""
+                    } ACK:${item.ack ?? "NACK"}`}</div>
+                  </div>
+
+                  <div className={styles.divAcarsText}>
+                    {item.text ?? "(No Text)"}
+                  </div>
+
+                  {item.libacars && (
+                    <div className={styles.divAcarsBriefLibacarsButtonWrapper}>
+                      <Button
+                        className={styles.btnAcarsBriefLibacars}
+                        type="link"
+                        onClick={() => {
+                          setLibacars(item.libacars!);
+                          setLibacarsModalOpen(true);
+                        }}>
+                        libacars
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </List.Item>
+            )}
+          />
+        ) : (
+          <Table
+            className={styles.tableListAcars}
+            rowKey="id"
+            columns={columns}
+            dataSource={displayMessages}
+            pagination={{
+              pageSizeOptions: [10, 20, 30, 50, 100, 200],
+              showQuickJumper: true,
+            }}
+          />
+        )}
       </Flex>
 
       <Modal
