@@ -37,11 +37,16 @@
   white-space: pre-wrap;
   word-break: break-all;
 
+  width: 100%;
+
   padding: 5px 10px;
 
   border-radius: 8px;
 
   background-color: rgb(248, 249, 251);
+
+  max-height: 230px;
+  overflow-y: auto;
 }
 
 .divAcarsBriefInfo {

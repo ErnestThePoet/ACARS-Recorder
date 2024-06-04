@@ -14,25 +14,47 @@ function getNested<T>(obj: any, keys: string[]): Maybe<T> {
   return result as Maybe<T>;
 }
 
-export function getStringSorter<T>(key: keyof T | string[]) {
+function applyReverse(result: number, reverse: boolean) {
+  return reverse ? -result : result;
+}
+
+export function getStringSorter<T>(
+  key: keyof T | string[],
+  reverse: boolean = false,
+) {
   if (Array.isArray(key)) {
     return (a: T, b: T) =>
-      stringCompare(getNested(a, key) ?? "", getNested(b, key) ?? "");
+      applyReverse(
+        stringCompare(getNested(a, key) ?? "", getNested(b, key) ?? ""),
+        reverse,
+      );
   }
 
   return (a: T, b: T) =>
-    stringCompare(
-      (a[key] as Maybe<string>) ?? "",
-      (b[key] as Maybe<string>) ?? "",
+    applyReverse(
+      stringCompare(
+        (a[key] as Maybe<string>) ?? "",
+        (b[key] as Maybe<string>) ?? "",
+      ),
+      reverse,
     );
 }
 
-export function getNumberSorter<T>(key: keyof T | string[]) {
+export function getNumberSorter<T>(
+  key: keyof T | string[],
+  reverse: boolean = false,
+) {
   if (Array.isArray(key)) {
     return (a: T, b: T) =>
-      (getNested<number>(a, key) ?? 0) - (getNested<number>(b, key) ?? 0);
+      applyReverse(
+        (getNested<number>(a, key) ?? 0) - (getNested<number>(b, key) ?? 0),
+        reverse,
+      );
   }
 
   return (a: T, b: T) =>
-    ((a[key] as Maybe<number>) ?? 0) - ((b[key] as Maybe<number>) ?? 0);
+    applyReverse(
+      ((a[key] as Maybe<number>) ?? 0) - ((b[key] as Maybe<number>) ?? 0),
+      reverse,
+    );
 }

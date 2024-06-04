@@ -13,17 +13,13 @@ import {
   Tooltip,
 } from "antd";
 import type { TableProps } from "antd";
-import {
-  SyncOutlined,
-  SearchOutlined,
-  ExportOutlined,
-} from "@ant-design/icons";
+import { SyncOutlined, ExportOutlined } from "@ant-design/icons";
 import styles from "./page.module.scss";
 import Nav from "./Nav/Nav";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { GET, getApiUrl, handleRequest } from "@/modules/api/api";
-import { formatSTimeyMdHms } from "@/modules/utils/date-time.util";
+import { MS_PER_SEC, formatSTimeyMdHms } from "@/modules/utils/date-time.util";
 import {
   LOCAL_TIMEZONE_NAME,
   LOCAL_TIMEZONE_OFFSET,
@@ -60,7 +56,7 @@ interface AcarsMessage {
 
 type FilterableKeys = keyof Pick<
   AcarsMessage,
-  "freq" | "label" | "regNo" | "flightNo" | "msgNo"
+  "freq" | "label" | "regNo" | "flightNo" | "msgNo" | "ack"
 >;
 
 interface FilterValueType {
@@ -69,28 +65,33 @@ interface FilterValueType {
   regNo: (string | null)[];
   flightNo: (string | null)[];
   msgNo: (string | null)[];
+  ack: (string | null)[];
 }
 
+function getTodayTimeRange(): [Dayjs, Dayjs] {
+  const now = new Date();
+  return [
+    dayjs(
+      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0),
+    ),
+    dayjs(
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999,
+      ),
+    ),
+  ];
+}
+
+const todayTimeRange = getTodayTimeRange();
+
 export default function Home() {
-  const [timeRange, setTimeRange] = useState<[Dayjs, Dayjs]>(() => {
-    const now = new Date();
-    return [
-      dayjs(
-        new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0),
-      ),
-      dayjs(
-        new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate(),
-          23,
-          59,
-          59,
-          999,
-        ),
-      ),
-    ];
-  });
+  const timeRangeRef = useRef<[Dayjs, Dayjs]>(todayTimeRange);
 
   const [searchKey, setSearchKey] = useState("");
 
@@ -104,6 +105,14 @@ export default function Home() {
   const [libacarsModalOpen, setLibacarsModalOpen] = useState(false);
   const [libacars, setLibacars] = useState("{}");
 
+  const pendingSearch = useRef<{
+    pending: boolean;
+    keyword: string;
+  }>({
+    pending: false,
+    keyword: "",
+  });
+
   const filterValues = useMemo<FilterValueType>(() => {
     const filterValueSets: Record<FilterableKeys, Set<string | null>> = {
       freq: new Set<string>(),
@@ -111,6 +120,7 @@ export default function Home() {
       regNo: new Set<string | null>(),
       flightNo: new Set<string | null>(),
       msgNo: new Set<string | null>(),
+      ack: new Set<string | null>(),
     };
 
     const keys: FilterableKeys[] = [
@@ -119,6 +129,7 @@ export default function Home() {
       "regNo",
       "flightNo",
       "msgNo",
+      "ack",
     ];
 
     for (const message of messages) {
@@ -137,23 +148,95 @@ export default function Home() {
     return filterValuesUnsorted as unknown as FilterValueType;
   }, [messages]);
 
+  const applySearch = useCallback(() => {
+    pendingSearch.current.keyword = searchKey.toLowerCase();
+
+    if (pendingSearch.current.pending) {
+      return;
+    }
+
+    pendingSearch.current.pending = true;
+
+    setTimeout(() => {
+      if (pendingSearch.current.keyword === "") {
+        setDisplayMessages(messages);
+      } else {
+        setDisplayMessages(
+          messages.filter(
+            x =>
+              x.text &&
+              x.text.toLowerCase().includes(pendingSearch.current.keyword),
+          ),
+        );
+      }
+
+      pendingSearch.current.pending = false;
+    }, 100);
+  }, [searchKey, messages]);
+
   const syncMessages = useCallback(() => {
     setFilterLoading(true);
 
     handleRequest(
       GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
-        startS: timeRange[0].unix(),
-        endS: timeRange[1].unix(),
+        startS: timeRangeRef.current[0].unix(),
+        endS: timeRangeRef.current[1].unix(),
       }),
       {
-        onSuccess: data => setMessages(data),
+        onSuccess: (data: AcarsMessage[]) =>
+          setMessages(data.sort(getNumberSorter("time", true))),
         onFinish: () => setFilterLoading(false),
       },
     );
-  }, [timeRange]);
+  }, []);
 
   const columns = useMemo<TableProps<AcarsMessage>["columns"]>(
     () => [
+      {
+        title: "Text",
+        dataIndex: "text",
+        key: "text",
+        align: "center",
+        sorter: getStringSorter("text"),
+        filters: [
+          {
+            text: "libacars decoded",
+            value: true,
+          },
+          {
+            text: "Not decoded",
+            value: false,
+          },
+        ],
+        onFilter: (value, record) => value === Boolean(record.libacars),
+        render: (text, record) => (
+          <Flex
+            vertical
+            align="flex-start"
+            style={{
+              minWidth: "380px",
+            }}>
+            <div
+              className={classNames(
+                { [styles.divAcarsText]: text !== null },
+                noto_Sans_Mono.className,
+              )}>
+              {text}
+            </div>
+
+            {record.libacars && (
+              <Button
+                type="link"
+                onClick={() => {
+                  setLibacars(record.libacars!);
+                  setLibacarsModalOpen(true);
+                }}>
+                libacars
+              </Button>
+            )}
+          </Flex>
+        ),
+      },
       {
         title: "Time",
         dataIndex: "time",
@@ -175,7 +258,7 @@ export default function Home() {
         ),
       },
       {
-        title: "Freq",
+        title: "Freq/L",
         dataIndex: "freq",
         key: "freq",
         align: "center",
@@ -185,31 +268,14 @@ export default function Home() {
           value: x,
         })),
         onFilter: (value, record) => value === record.freq,
-        render: freq => (
-          <div
-            style={{
-              width: "80px",
-            }}>
-            {freq + "MHz"}
-          </div>
-        ),
-      },
-      {
-        title: "Misc",
-        key: "misc",
-        align: "center",
-        render: (_, record) => (
+        render: (freq, record) => (
           <Flex
             vertical
-            align="flex-start"
             style={{
               width: "80px",
             }}>
-            <span>Level: {record.level.toFixed(1)}</span>
-            <span>Error: {record.error}</span>
-            <span>Mode: {record.mode}</span>
-            {record.blockId && <span>Block ID: {record.blockId}</span>}
-            <span>ACK: {record.ack ?? "NACK"}</span>
+            <span>{freq}MHz</span>
+            <span>{record.level.toFixed(1)}dBm</span>
           </Flex>
         ),
       },
@@ -256,19 +322,20 @@ export default function Home() {
           value: x as any,
         })),
         onFilter: (value, record) => value === record.regNo,
-        render: (regNo, record) => (
-          <Tooltip title={record.aircraftDescription}>
-            <div
-              className={classNames({
-                [styles.withTooltip]: record.aircraftDescription !== null,
-              })}
-              style={{
-                width: "90px",
-              }}>
-              {regNo}
-            </div>
-          </Tooltip>
-        ),
+        render: (regNo, record) =>
+          regNo && (
+            <Tooltip title={record.aircraftDescription}>
+              <div
+                className={classNames({
+                  [styles.withTooltip]: record.aircraftDescription !== null,
+                })}
+                style={{
+                  width: "90px",
+                }}>
+                {regNo}
+              </div>
+            </Tooltip>
+          ),
       },
       {
         title: "Flight",
@@ -281,19 +348,20 @@ export default function Home() {
           value: x as any,
         })),
         onFilter: (value, record) => value === record.flightNo,
-        render: (flightNo, record) => (
-          <Tooltip title={record.airlineDescription}>
-            <div
-              className={classNames({
-                [styles.withTooltip]: record.airlineDescription !== null,
-              })}
-              style={{
-                width: "80px",
-              }}>
-              {flightNo}
-            </div>
-          </Tooltip>
-        ),
+        render: (flightNo, record) =>
+          flightNo && (
+            <Tooltip title={record.airlineDescription}>
+              <div
+                className={classNames({
+                  [styles.withTooltip]: record.airlineDescription !== null,
+                })}
+                style={{
+                  width: "80px",
+                }}>
+                {flightNo}
+              </div>
+            </Tooltip>
+          ),
       },
       {
         title: "Msg No",
@@ -306,61 +374,54 @@ export default function Home() {
           value: x as any,
         })),
         onFilter: (value, record) => value === record.msgNo,
-        render: msgNo => (
+        render: msgNo =>
+          msgNo && (
+            <Flex
+              justify="center"
+              align="center"
+              style={{
+                width: "90px",
+              }}>
+              <Tag color="cyan">{msgNo}</Tag>
+            </Flex>
+          ),
+      },
+      {
+        title: "ACK",
+        dataIndex: "ack",
+        key: "ack",
+        align: "center",
+        sorter: (a, b) => stringCompare(a.ack ?? "NACK", b.ack ?? "NACK"),
+        filters: filterValues.ack.map(x => ({
+          text: x ?? "NACK",
+          value: x as any,
+        })),
+        onFilter: (value, record) => value === record.ack,
+        render: ack => (
           <Flex
             justify="center"
             align="center"
             style={{
-              width: "90px",
+              width: "70px",
             }}>
-            <Tag color="cyan">{msgNo}</Tag>
+            <Tag color="purple">{ack ?? "NACK"}</Tag>
           </Flex>
         ),
       },
       {
-        title: "Text",
-        dataIndex: "text",
-        key: "text",
+        title: "Misc",
+        key: "misc",
         align: "center",
-        sorter: getStringSorter("text"),
-        render: text => (
-          <div
-            className={classNames(
-              { [styles.divAcarsText]: text !== null },
-              noto_Sans_Mono.className,
-            )}
-            style={{
-              minWidth: "380px",
-            }}>
-            {text}
-          </div>
-        ),
-      },
-      {
-        title: "libacars",
-        dataIndex: "libacars",
-        key: "libacars",
-        align: "center",
-        sorter: getStringSorter("libacars"),
-        render: libacars => (
+        render: (_, record) => (
           <Flex
-            justify="center"
-            align="center"
+            vertical
+            align="flex-start"
             style={{
-              width: "60px",
+              width: "80px",
             }}>
-            {libacars ? (
-              <Button
-                type="link"
-                onClick={() => {
-                  setLibacars(libacars);
-                  setLibacarsModalOpen(true);
-                }}>
-                View
-              </Button>
-            ) : (
-              " "
-            )}
+            <span>Error: {record.error}</span>
+            <span>Mode: {record.mode}</span>
+            {record.blockId && <span>Block ID: {record.blockId}</span>}
           </Flex>
         ),
       },
@@ -368,22 +429,15 @@ export default function Home() {
     [filterValues],
   );
 
-  const applySearch = useCallback(() => {
-    if (searchKey === "") {
-      setDisplayMessages(messages);
-      return;
-    }
+  useEffect(() => {
+    syncMessages();
 
-    setDisplayMessages(
-      messages.filter(
-        x => x.text && x.text.toLowerCase().includes(searchKey.toLowerCase()),
-      ),
-    );
-  }, [searchKey, messages]);
+    const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
 
-  useEffect(applySearch, [messages]);
+    return () => clearInterval(refetchIntervalId);
+  }, []);
 
-  useEffect(syncMessages, []);
+  useEffect(applySearch, [searchKey, messages]);
 
   return (
     <main className={styles.main}>
@@ -393,21 +447,22 @@ export default function Home() {
           <Flex gap={10}>
             <DatePicker.RangePicker
               showTime
-              value={timeRange}
+              defaultValue={todayTimeRange}
               onChange={range => {
                 if (range && range[0] && range[1]) {
-                  setTimeRange(range as [Dayjs, Dayjs]);
+                  timeRangeRef.current = range as [Dayjs, Dayjs];
+                  syncMessages();
                 }
               }}
             />
 
             <Button
               onClick={syncMessages}
-              type="primary"
+              type="text"
+              shape="circle"
               icon={<SyncOutlined />}
-              loading={filterLoading}>
-              Sync
-            </Button>
+              loading={filterLoading}
+            />
           </Flex>
 
           <Flex gap={10}>
@@ -417,13 +472,6 @@ export default function Home() {
               onChange={e => setSearchKey(e.target.value)}
               allowClear
             />
-
-            <Button
-              onClick={applySearch}
-              type="primary"
-              icon={<SearchOutlined />}>
-              Search
-            </Button>
           </Flex>
 
           <Tag color={displayMessages.length ? "green" : "default"}>
@@ -446,8 +494,8 @@ export default function Home() {
                 getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
                   "?" +
                   new URLSearchParams({
-                    startS: timeRange[0].unix().toString(),
-                    endS: timeRange[1].unix().toString(),
+                    startS: timeRangeRef.current[0].unix().toString(),
+                    endS: timeRangeRef.current[1].unix().toString(),
                   }),
               );
             }}
