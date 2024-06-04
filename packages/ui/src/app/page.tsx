@@ -91,11 +91,14 @@ function getTodayTimeRange(): [Dayjs, Dayjs] {
 const todayTimeRange = getTodayTimeRange();
 
 export default function Home() {
-  const timeRangeRef = useRef<[Dayjs, Dayjs]>(todayTimeRange);
+  const [timeRange, setTimeRange] = useState<[Dayjs, Dayjs]>(todayTimeRange);
 
   const [searchKey, setSearchKey] = useState("");
+  const searchKeyRef = useRef("");
 
   const [messages, setMessages] = useState<AcarsMessage[]>([]);
+  const messagesRef = useRef<AcarsMessage[]>([]);
+
   const [displayMessages, setDisplayMessages] = useState<AcarsMessage[]>([]);
 
   const [filterLoading, setFilterLoading] = useState(false);
@@ -107,10 +110,8 @@ export default function Home() {
 
   const pendingSearch = useRef<{
     pending: boolean;
-    keyword: string;
   }>({
     pending: false,
-    keyword: "",
   });
 
   const filterValues = useMemo<FilterValueType>(() => {
@@ -147,48 +148,6 @@ export default function Home() {
 
     return filterValuesUnsorted as unknown as FilterValueType;
   }, [messages]);
-
-  const applySearch = useCallback(() => {
-    pendingSearch.current.keyword = searchKey.toLowerCase();
-
-    if (pendingSearch.current.pending) {
-      return;
-    }
-
-    pendingSearch.current.pending = true;
-
-    setTimeout(() => {
-      if (pendingSearch.current.keyword === "") {
-        setDisplayMessages(messages);
-      } else {
-        setDisplayMessages(
-          messages.filter(
-            x =>
-              x.text &&
-              x.text.toLowerCase().includes(pendingSearch.current.keyword),
-          ),
-        );
-      }
-
-      pendingSearch.current.pending = false;
-    }, 100);
-  }, [searchKey, messages]);
-
-  const syncMessages = useCallback(() => {
-    setFilterLoading(true);
-
-    handleRequest(
-      GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
-        startS: timeRangeRef.current[0].unix(),
-        endS: timeRangeRef.current[1].unix(),
-      }),
-      {
-        onSuccess: (data: AcarsMessage[]) =>
-          setMessages(data.sort(getNumberSorter("time", true))),
-        onFinish: () => setFilterLoading(false),
-      },
-    );
-  }, []);
 
   const columns = useMemo<TableProps<AcarsMessage>["columns"]>(
     () => [
@@ -262,7 +221,8 @@ export default function Home() {
         dataIndex: "freq",
         key: "freq",
         align: "center",
-        sorter: (a, b) => parseFloat(a.freq) - parseFloat(b.freq),
+        sorter: (a, b) =>
+          parseFloat(a.freq) - parseFloat(b.freq) || a.level - b.level,
         filters: filterValues.freq.map(x => ({
           text: x + "MHz",
           value: x,
@@ -429,13 +389,56 @@ export default function Home() {
     [filterValues],
   );
 
-  useEffect(() => {
-    syncMessages();
+  const applySearch = useCallback(() => {
+    if (pendingSearch.current.pending) {
+      return;
+    }
 
+    pendingSearch.current.pending = true;
+
+    setTimeout(() => {
+      if (searchKeyRef.current === "") {
+        setDisplayMessages(messagesRef.current);
+      } else {
+        setDisplayMessages(
+          messagesRef.current.filter(
+            x =>
+              x.text &&
+              x.text.toLowerCase().includes(searchKeyRef.current.toLowerCase()),
+          ),
+        );
+      }
+
+      pendingSearch.current.pending = false;
+    }, 100);
+  }, []);
+
+  const syncMessages = useCallback(() => {
+    setFilterLoading(true);
+
+    handleRequest(
+      GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
+        startS: timeRange[0].unix(),
+        endS: timeRange[1].unix(),
+      }),
+      {
+        onSuccess: (data: AcarsMessage[]) => {
+          setMessages(data.sort(getNumberSorter("time", true)));
+          messagesRef.current = data;
+        },
+        onFinish: () => setFilterLoading(false),
+      },
+    );
+  }, [timeRange]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(syncMessages, [timeRange]);
+
+  useEffect(() => {
     const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
 
     return () => clearInterval(refetchIntervalId);
-  }, []);
+  }, [syncMessages]);
 
   useEffect(applySearch, [searchKey, messages]);
 
@@ -450,8 +453,7 @@ export default function Home() {
               defaultValue={todayTimeRange}
               onChange={range => {
                 if (range && range[0] && range[1]) {
-                  timeRangeRef.current = range as [Dayjs, Dayjs];
-                  syncMessages();
+                  setTimeRange(range as [Dayjs, Dayjs]);
                 }
               }}
             />
@@ -469,7 +471,10 @@ export default function Home() {
             <Input
               className={styles.inSearch}
               value={searchKey}
-              onChange={e => setSearchKey(e.target.value)}
+              onChange={e => {
+                setSearchKey(e.target.value);
+                searchKeyRef.current = e.target.value;
+              }}
               allowClear
             />
           </Flex>
@@ -494,8 +499,8 @@ export default function Home() {
                 getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
                   "?" +
                   new URLSearchParams({
-                    startS: timeRangeRef.current[0].unix().toString(),
-                    endS: timeRangeRef.current[1].unix().toString(),
+                    startS: timeRange[0].unix().toString(),
+                    endS: timeRange[1].unix().toString(),
                   }),
               );
             }}
