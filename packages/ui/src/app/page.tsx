@@ -103,7 +103,7 @@ export default function Home() {
 
   const [filterLoading, setFilterLoading] = useState(false);
 
-  const [brief, setBrief] = useState(false);
+  const [brief, setBrief] = useState(window.innerWidth < window.innerHeight);
 
   const [libacarsModalOpen, setLibacarsModalOpen] = useState(false);
   const [libacars, setLibacars] = useState("{}");
