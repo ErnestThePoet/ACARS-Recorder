@@ -103,7 +103,7 @@ export default function Home() {
 
   const [filterLoading, setFilterLoading] = useState(false);
 
-  const [brief, setBrief] = useState(window.innerWidth < window.innerHeight);
+  const [brief, setBrief] = useState(false);
 
   const [libacarsModalOpen, setLibacarsModalOpen] = useState(false);
   const [libacars, setLibacars] = useState("{}");
@@ -442,6 +442,8 @@ export default function Home() {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(applySearch, [searchKey, messages]);
+
+  useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
 
   return (
     <main className={styles.main}>
