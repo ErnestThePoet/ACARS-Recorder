@@ -473,6 +473,7 @@ export default function Home() {
           <Flex gap={10}>
             <Input
               className={styles.inSearch}
+              placeholder="Search ACARS text"
               value={searchKey}
               onChange={e => {
                 setSearchKey(e.target.value);
