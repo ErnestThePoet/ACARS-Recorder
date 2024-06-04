@@ -440,6 +440,7 @@ export default function Home() {
     return () => clearInterval(refetchIntervalId);
   }, [syncMessages]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(applySearch, [searchKey, messages]);
 
   return (
