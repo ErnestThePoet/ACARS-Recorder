@@ -14,7 +14,7 @@ If you use [acarsdec](https://github.com/TLeconte/acarsdec) to decode ACARS mess
 <image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/ui1.png"/>
 
 ## Brief UI Mode
-<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/ui2.png" width="400px"/>
+<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/ui2.png" width="500px"/>
 
 # System Structure
 
