@@ -3,7 +3,7 @@ If you use [acarsdec](https://github.com/TLeconte/acarsdec) to decode ACARS mess
 
 # System Structure
 
-<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/master/structure.png"/>
+<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/structure.png"/>
 
 # Start Guide
 I will assume you have no background knowledge in the field of Web developing and expand every detail for setting things up.
