@@ -1,9 +1,24 @@
 # ACARS-Recorder
 If you use [acarsdec](https://github.com/TLeconte/acarsdec) to decode ACARS messages and want a modern platform where you can store and view all the messages you received, this is what may light you up.
 
+# Features
+- Modern architecture
+- User-friendly, responsive UI
+- ACARS messages: sort, filter, search and excel format data export
+- Supports showing libacars decoded contents
+- Supports Brief UI mode(suitable for vertical screen mobile devices)
+- Supports data feed from unlimited number of acarsdec instances
+
+# Screenshots
+## Normal UI Mode
+<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/ui1.png"/>
+
+## Brief UI Mode
+<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/ui2.png" width="400px"/>
+
 # System Structure
 
-<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/structure.png"/>
+<image src="https://github.com/ErnestThePoet/ACARS-Recorder/blob/main/structure.png" width="500px"/>
 
 # Start Guide
 I will assume you have no background knowledge in the field of Web developing and expand every detail for setting things up.
