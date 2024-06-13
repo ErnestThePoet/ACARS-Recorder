@@ -423,7 +423,7 @@ export default function Home() {
       }),
       {
         onSuccess: (data: AcarsMessage[]) => {
-          setMessages(data.sort(getNumberSorter("time", true)));
+          setMessages(data);
           messagesRef.current = data;
         },
         onFinish: () => setFilterLoading(false),
