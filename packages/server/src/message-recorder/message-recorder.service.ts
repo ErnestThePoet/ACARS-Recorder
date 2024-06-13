@@ -16,7 +16,7 @@ export class MessageRecorderService {
           message.toString("utf-8"),
         );
 
-        if (acarsMessage.label === "_d") {
+        if (acarsMessage.label === "_d" || acarsMessage.label === "Q0") {
           return;
         }
 
