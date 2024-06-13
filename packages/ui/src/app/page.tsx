@@ -443,8 +443,6 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(applySearch, [searchKey, messages]);
 
-  useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
-
   return (
     <main className={styles.main}>
       <Nav />
