@@ -435,7 +435,7 @@ export default function Home() {
   useEffect(syncMessages, [timeRange]);
 
   useEffect(() => {
-    const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
+    const refetchIntervalId = setInterval(syncMessages, 1 * MS_PER_SEC);
 
     return () => clearInterval(refetchIntervalId);
   }, [syncMessages]);
