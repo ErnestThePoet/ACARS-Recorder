@@ -97,7 +97,7 @@ Example command using an RTL-SDR(also in a newly started `screen` session):
 ```
 acarsdec -j 127.0.0.1:16009 -r A01 131.45
 ```
-Bear in mind that ACARS frequencies vary in different countries. Make sure to tune to correct frequencies in your area.
+Bear in mind that ACARS frequencies vary in different countries. Make sure to tune to correct frequencies in your area. Also, ACARS link test messages(whose label is `_d` or `Q0`) will be discarded by server.
 
 ## Configuring nginx
 One last step to enjoy our efforts. Edit `/etc/nginx/nginx.conf`, add the following block in `http` block:
