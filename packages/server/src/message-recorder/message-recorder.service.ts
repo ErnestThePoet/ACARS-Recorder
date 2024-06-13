@@ -15,6 +15,11 @@ export class MessageRecorderService {
         const acarsMessage: AcarsMessage = JSON.parse(
           message.toString("utf-8"),
         );
+
+        if (acarsMessage.label === "_d") {
+          return;
+        }
+
         console.log(chalk.cyanBright("-".repeat(80)));
         console.log(chalk.cyanBright(JSON.stringify(acarsMessage, null, 2)));
 
