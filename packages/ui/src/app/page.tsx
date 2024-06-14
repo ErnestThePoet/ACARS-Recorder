@@ -56,16 +56,26 @@ interface AcarsMessage {
 
 type FilterableKeys = keyof Pick<
   AcarsMessage,
-  "freq" | "label" | "regNo" | "flightNo" | "msgNo" | "ack"
+  "libacars" | "freq" | "label" | "regNo" | "flightNo" | "msgNo" | "ack"
 >;
 
-interface FilterValueType {
-  freq: string[];
-  label: string[];
-  regNo: (string | null)[];
-  flightNo: (string | null)[];
-  msgNo: (string | null)[];
-  ack: (string | null)[];
+interface ValueCountType<T> {
+  value: T;
+  count: number;
+}
+
+interface FieldFiltersType {
+  libacars: ValueCountType<boolean>[];
+  freq: ValueCountType<string>[];
+  label: ValueCountType<string>[];
+  regNo: ValueCountType<string | null>[];
+  flightNo: ValueCountType<string | null>[];
+  msgNo: ValueCountType<string | null>[];
+  ack: ValueCountType<string | null>[];
+}
+
+function getFilterTextWithCount(text: string, count: number): string {
+  return `${text} (${count})`;
 }
 
 function getTodayTimeRange(): [Dayjs, Dayjs] {
@@ -114,16 +124,21 @@ export default function Home() {
     pending: false,
   });
 
-  const filterValues = useMemo<FilterValueType>(() => {
-    const filterValueSets: Record<FilterableKeys, Set<string | null>> = {
-      freq: new Set<string>(),
-      label: new Set<string>(),
-      regNo: new Set<string | null>(),
-      flightNo: new Set<string | null>(),
-      msgNo: new Set<string | null>(),
-      ack: new Set<string | null>(),
+  const fieldFilters = useMemo<FieldFiltersType>(() => {
+    const filterValueCountMaps: Record<
+      FilterableKeys,
+      Map<string | boolean | null, number>
+    > = {
+      libacars: new Map<boolean, number>(),
+      freq: new Map<string, number>(),
+      label: new Map<string, number>(),
+      regNo: new Map<string | null, number>(),
+      flightNo: new Map<string | null, number>(),
+      msgNo: new Map<string | null, number>(),
+      ack: new Map<string | null, number>(),
     };
 
+    // Process libacars individually
     const keys: FilterableKeys[] = [
       "freq",
       "label",
@@ -133,21 +148,56 @@ export default function Home() {
       "ack",
     ];
 
-    for (const message of messages) {
+    for (const message of displayMessages) {
       for (const key of keys) {
-        filterValueSets[key].add(message[key]);
+        if (filterValueCountMaps[key].has(message[key])) {
+          filterValueCountMaps[key].set(
+            message[key],
+            filterValueCountMaps[key].get(message[key])! + 1,
+          );
+        } else {
+          filterValueCountMaps[key].set(message[key], 1);
+        }
+      }
+
+      const libacars = Boolean(message.libacars);
+
+      if (filterValueCountMaps.libacars.has(libacars)) {
+        filterValueCountMaps.libacars.set(
+          libacars,
+          filterValueCountMaps.libacars.get(libacars)! + 1,
+        );
+      } else {
+        filterValueCountMaps.libacars.set(libacars, 1);
       }
     }
 
-    const filterValuesUnsorted: Record<string, (string | null)[]> = {};
+    const fieldFiltersResult: FieldFiltersType =
+      {} as unknown as FieldFiltersType;
+
     for (const key of keys) {
-      filterValuesUnsorted[key] = Array.from(filterValueSets[key]).sort(
-        (a, b) => stringCompare(a ?? "", b ?? ""),
-      );
+      fieldFiltersResult[key] = Array.from(filterValueCountMaps[key])
+        .sort((a, b) =>
+          stringCompare(
+            (a[0] as string | null) ?? "",
+            (b[0] as string | null) ?? "",
+          ),
+        )
+        .map(x => ({
+          value: x[0],
+          count: x[1],
+        })) as any;
     }
 
-    return filterValuesUnsorted as unknown as FilterValueType;
-  }, [messages]);
+    fieldFiltersResult.libacars = Array.from(filterValueCountMaps.libacars)
+      .sort((a, b) => Number(b[0] as boolean) - Number(a[0] as boolean))
+      .map(x => ({
+        value: x[0],
+        count: x[1],
+      })) as ValueCountType<boolean>[];
+
+    return fieldFiltersResult as FieldFiltersType;
+  }, [displayMessages]);
 
   const columns = useMemo<TableProps<AcarsMessage>["columns"]>(
     () => [
@@ -157,16 +207,13 @@ export default function Home() {
         key: "text",
         align: "center",
         sorter: getStringSorter("text"),
-        filters: [
-          {
-            text: "libacars decoded",
-            value: true,
-          },
-          {
-            text: "Not decoded",
-            value: false,
-          },
-        ],
+        filters: fieldFilters.libacars.map(x => ({
+          text: getFilterTextWithCount(
+            x.value ? "libacars decoded" : "Not decoded",
+            x.count,
+          ),
+          value: x.value,
+        })),
         filterMode: "tree",
         onFilter: (value, record) => value === Boolean(record.libacars),
         render: (text, record) => (
@@ -224,12 +271,13 @@ export default function Home() {
         align: "center",
         sorter: (a, b) =>
           parseFloat(a.freq) - parseFloat(b.freq) || a.level - b.level,
-        filters: filterValues.freq.map(x => ({
-          text: x + "MHz",
-          value: x,
+        filters: fieldFilters.freq.map(x => ({
+          text: getFilterTextWithCount(x.value + "MHz", x.count),
+          value: x.value,
         })),
         filterMode: "tree",
-        filterSearch: true,
+        filterSearch: (input, record) =>
+          ((record.value as string) + "MHz").includes(input),
         onFilter: (value, record) => value === record.freq,
         render: (freq, record) => (
           <Flex
@@ -248,12 +296,13 @@ export default function Home() {
         key: "label",
         align: "center",
         sorter: getStringSorter("label"),
-        filters: filterValues.label.map(x => ({
-          text: x,
-          value: x,
+        filters: fieldFilters.label.map(x => ({
+          text: getFilterTextWithCount(x.value, x.count),
+          value: x.value,
         })),
         filterMode: "tree",
-        filterSearch: true,
+        filterSearch: (input, record) =>
+          (record.value as string).includes(input),
         onFilter: (value, record) => value === record.label,
         render: (label, record) => (
           <Flex
@@ -282,12 +331,16 @@ export default function Home() {
         key: "regNo",
         align: "center",
         sorter: getStringSorter("regNo"),
-        filters: filterValues.regNo.map(x => ({
-          text: x ?? "(Empty)",
-          value: x as any,
+        filters: fieldFilters.regNo.map(x => ({
+          text: getFilterTextWithCount(x.value ?? "(Empty)", x.count),
+          value: x.value as any,
         })),
         filterMode: "tree",
-        filterSearch: true,
+        filterSearch: (input, record) =>
+          ((record.value as string) === "null"
+            ? "(Empty)"
+            : (record.value as string)
+          ).includes(input),
         onFilter: (value, record) => value === record.regNo,
         render: (regNo, record) =>
           regNo && (
@@ -310,12 +363,16 @@ export default function Home() {
         key: "flightNo",
         align: "center",
         sorter: getStringSorter("flightNo"),
-        filters: filterValues.flightNo.map(x => ({
-          text: x ?? "(Empty)",
-          value: x as any,
+        filters: fieldFilters.flightNo.map(x => ({
+          text: getFilterTextWithCount(x.value ?? "(Empty)", x.count),
+          value: x.value as any,
         })),
         filterMode: "tree",
-        filterSearch: true,
+        filterSearch: (input, record) =>
+          ((record.value as string) === "null"
+            ? "(Empty)"
+            : (record.value as string)
+          ).includes(input),
         onFilter: (value, record) => value === record.flightNo,
         render: (flightNo, record) =>
           flightNo && (
@@ -338,12 +395,16 @@ export default function Home() {
         key: "msgNo",
         align: "center",
         sorter: getStringSorter("msgNo"),
-        filters: filterValues.msgNo.map(x => ({
-          text: x ?? "(Empty)",
-          value: x as any,
+        filters: fieldFilters.msgNo.map(x => ({
+          text: getFilterTextWithCount(x.value ?? "(Empty)", x.count),
+          value: x.value as any,
         })),
         filterMode: "tree",
-        filterSearch: true,
+        filterSearch: (input, record) =>
+          ((record.value as string) === "null"
+            ? "(Empty)"
+            : (record.value as string)
+          ).includes(input),
         onFilter: (value, record) => value === record.msgNo,
         render: msgNo =>
           msgNo && (
@@ -363,12 +424,16 @@ export default function Home() {
         key: "ack",
         align: "center",
         sorter: (a, b) => stringCompare(a.ack ?? "NACK", b.ack ?? "NACK"),
-        filters: filterValues.ack.map(x => ({
-          text: x ?? "NACK",
-          value: x as any,
+        filters: fieldFilters.ack.map(x => ({
+          text: getFilterTextWithCount(x.value ?? "NACK", x.count),
+          value: x.value as any,
         })),
         filterMode: "tree",
-        filterSearch: true,
+        filterSearch: (input, record) =>
+          ((record.value as string) === "null"
+            ? "NACK"
+            : (record.value as string)
+          ).includes(input),
         onFilter: (value, record) => value === record.ack,
         render: ack => (
           <Flex
@@ -399,7 +464,7 @@ export default function Home() {
         ),
       },
     ],
-    [filterValues],
+    [fieldFilters],
   );
 
   const applySearch = useCallback(() => {
