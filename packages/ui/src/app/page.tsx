@@ -167,6 +167,7 @@ export default function Home() {
             value: false,
           },
         ],
+        filterMode: "tree",
         onFilter: (value, record) => value === Boolean(record.libacars),
         render: (text, record) => (
           <Flex
@@ -227,6 +228,8 @@ export default function Home() {
           text: x + "MHz",
           value: x,
         })),
+        filterMode: "tree",
+        filterSearch: true,
         onFilter: (value, record) => value === record.freq,
         render: (freq, record) => (
           <Flex
@@ -249,6 +252,8 @@ export default function Home() {
           text: x,
           value: x,
         })),
+        filterMode: "tree",
+        filterSearch: true,
         onFilter: (value, record) => value === record.label,
         render: (label, record) => (
           <Flex
@@ -281,6 +286,8 @@ export default function Home() {
           text: x ?? "(Empty)",
           value: x as any,
         })),
+        filterMode: "tree",
+        filterSearch: true,
         onFilter: (value, record) => value === record.regNo,
         render: (regNo, record) =>
           regNo && (
@@ -307,6 +314,8 @@ export default function Home() {
           text: x ?? "(Empty)",
           value: x as any,
         })),
+        filterMode: "tree",
+        filterSearch: true,
         onFilter: (value, record) => value === record.flightNo,
         render: (flightNo, record) =>
           flightNo && (
@@ -333,6 +342,8 @@ export default function Home() {
           text: x ?? "(Empty)",
           value: x as any,
         })),
+        filterMode: "tree",
+        filterSearch: true,
         onFilter: (value, record) => value === record.msgNo,
         render: msgNo =>
           msgNo && (
@@ -356,6 +367,8 @@ export default function Home() {
           text: x ?? "NACK",
           value: x as any,
         })),
+        filterMode: "tree",
+        filterSearch: true,
         onFilter: (value, record) => value === record.ack,
         render: ack => (
           <Flex
