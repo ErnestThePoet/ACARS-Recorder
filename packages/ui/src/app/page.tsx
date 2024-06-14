@@ -517,6 +517,12 @@ export default function Home() {
             className={styles.tableListAcars}
             bordered
             dataSource={displayMessages}
+            pagination={{
+              defaultPageSize: 30,
+              pageSizeOptions: [10, 20, 30, 50, 100, 200],
+              showSizeChanger: true,
+              showQuickJumper: true,
+            }}
             renderItem={item => (
               <List.Item className={noto_Sans_Mono.className}>
                 <div>
@@ -599,7 +605,7 @@ export default function Home() {
             columns={columns}
             dataSource={displayMessages}
             pagination={{
-              defaultPageSize: 20,
+              defaultPageSize: 30,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
               showSizeChanger: true,
               showQuickJumper: true,
