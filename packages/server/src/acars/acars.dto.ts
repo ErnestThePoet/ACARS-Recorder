@@ -1,13 +1,42 @@
-import { IsNumberString } from "class-validator";
+import { IsNumberString, IsString } from "class-validator";
 
 export class GetAllMessagesInTimeRangeDto {
-  @IsNumberString(null, {
-    message: '"startS" field invalid',
-  })
+  @IsNumberString(
+    {},
+    {
+      message: '"startS" field invalid',
+    },
+  )
   startS: string;
 
-  @IsNumberString(null, {
-    message: '"endS" field invalid',
-  })
+  @IsNumberString(
+    {},
+    {
+      message: '"endS" field invalid',
+    },
+  )
   endS: string;
+}
+
+export class GetStatisticsDto {
+  @IsNumberString(
+    {},
+    {
+      message: '"startS" field invalid',
+    },
+  )
+  startS: string;
+
+  @IsNumberString(
+    {},
+    {
+      message: '"endS" field invalid',
+    },
+  )
+  endS: string;
+
+  @IsString({
+    message: '"text" field invalid',
+  })
+  text: string;
 }

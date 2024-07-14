@@ -73,16 +73,16 @@ export class AcarsDatasetManager {
   private regNoMap: Map<string, string>;
   private airlineMap: Map<string, string>;
 
-  getLabelDescription(label: string) {
-    return this.labelMap.has(label) ? this.labelMap.get(label) : null;
+  getLabelDescription(label: string): string | null {
+    return this.labelMap.has(label) ? this.labelMap.get(label)! : null;
   }
 
-  getAircraftDescription(regNo: string) {
-    return this.regNoMap.has(regNo) ? this.regNoMap.get(regNo) : null;
+  getAircraftDescription(regNo: string): string | null {
+    return this.regNoMap.has(regNo) ? this.regNoMap.get(regNo)! : null;
   }
 
-  getAirlineDescription(flightNo: string) {
-    let airlineCode = null;
+  getAirlineDescription(flightNo: string): string | null {
+    let airlineCode: string | null = null;
 
     if (flightNo.match(/^[A-Z]{3}/)) {
       airlineCode = flightNo.substring(0, 3);
@@ -91,7 +91,7 @@ export class AcarsDatasetManager {
     }
 
     return airlineCode && this.airlineMap.has(airlineCode)
-      ? this.airlineMap.get(airlineCode)
+      ? this.airlineMap.get(airlineCode)!
       : null;
   }
 }

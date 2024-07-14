@@ -41,6 +41,9 @@ export class Acars extends Model {
   @Column(DataTypes.CHAR(4))
   msgNo: string | null;
 
+  @Column(DataTypes.TINYINT)
+  reassemblyStatus: number;
+
   @Column(DataTypes.TEXT)
   text: string | null;
 
@@ -62,6 +65,7 @@ export type AcarsEntity = Pick<
   | "regNo"
   | "flightNo"
   | "msgNo"
+  | "reassemblyStatus"
   | "text"
   | "libacars"
 >;

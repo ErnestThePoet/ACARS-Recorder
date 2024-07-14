@@ -21,10 +21,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (typeof exception.getResponse() === "string") {
       message = exception.getResponse() as string;
     } else {
-      const exceptionResponse = exception.getResponse() as { message: unknown };
+      const exceptionResponse = exception.getResponse() as { message: any };
 
       if (Array.isArray(exceptionResponse.message)) {
-        message = (exception.getResponse() as { message: unknown }).message[0];
+        message = (exception.getResponse() as { message: any }).message[0];
       } else if (typeof exceptionResponse.message === "string") {
         message = exceptionResponse.message;
       } else {

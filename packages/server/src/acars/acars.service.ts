@@ -55,6 +55,7 @@ export class AcarsService {
         regNo: x.regNo,
         flightNo: x.flightNo,
         msgNo: x.msgNo,
+        reassemblyStatus: x.reassemblyStatus,
         text: x.text,
         libacars: x.libacars,
 

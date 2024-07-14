@@ -1,7 +1,7 @@
-import { StatusCodeType } from "../status-code";
+import { StatusCode } from "../status-code";
 
 export interface ResponseType<T = null> {
-  status: StatusCodeType;
+  status: StatusCode;
   message?: string;
   data?: T;
 }

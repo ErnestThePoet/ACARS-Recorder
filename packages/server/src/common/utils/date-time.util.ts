@@ -1,8 +1,10 @@
 import { format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
+export const S_PER_MINUTE = 60;
+
 export const MS_PER_SEC = 1000;
-export const MS_PER_MINUTE = MS_PER_SEC * 60;
+export const MS_PER_MINUTE = MS_PER_SEC * S_PER_MINUTE;
 export const MS_PER_HOUR = MS_PER_MINUTE * 60;
 export const MS_PER_DAY = MS_PER_HOUR * 24;
 
