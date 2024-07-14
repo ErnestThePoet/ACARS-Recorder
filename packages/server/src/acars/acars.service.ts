@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Acars } from "./acars.model";
-import { GetMessagesDto } from "./acars.dto";
+import { GetMessagesDto, GetStatisticsDto } from "./acars.dto";
 import { ResponseType } from "src/common/interface/response.interface";
-import { GetAcarsMessageElement } from "./acars.interface";
+import { GetAcarsMessageElement, GetStatisticsResponse } from "./acars.interface";
 import { successRes } from "src/common/response";
 import { Op, WhereOptions } from "sequelize";
 import { Response } from "express";
@@ -100,6 +100,10 @@ export class AcarsService {
     return {
       [Op.and]: conditions,
     };
+  }
+  
+  async getStatistics(dto: GetStatisticsDto): Promise<ResponseType<GetStatisticsResponse>>{
+    
   }
 
   async getMessages(

@@ -31,48 +31,9 @@ import {
 } from "@/modules/utils/sortors";
 import classNames from "classnames";
 import { noto_Sans_Mono } from "./fonts";
-
-interface AcarsMessage {
-  id: number;
-  time: number;
-  freq: string;
-  level: number;
-  error: number;
-  mode: string;
-  label: string;
-  subLabel: string | null;
-  blockId: string | null;
-  ack: string | null;
-  regNo: string | null;
-  flightNo: string | null;
-  msgNo: string | null;
-  text: string | null;
-  libacars: string | null;
-
-  labelDescription: string | null;
-  aircraftDescription: string | null;
-  airlineDescription: string | null;
-}
-
-type FilterableKeys = keyof Pick<
-  AcarsMessage,
-  "libacars" | "freq" | "label" | "regNo" | "flightNo" | "msgNo" | "ack"
->;
-
-interface ValueCountType<T> {
-  value: T;
-  count: number;
-}
-
-interface FieldFiltersType {
-  libacars: ValueCountType<boolean>[];
-  freq: ValueCountType<string>[];
-  label: ValueCountType<string>[];
-  regNo: ValueCountType<string | null>[];
-  flightNo: ValueCountType<string | null>[];
-  msgNo: ValueCountType<string | null>[];
-  ack: ValueCountType<string | null>[];
-}
+import { getReassemblyStatusString } from "@/modules/reassembly";
+import { AcarsMessage } from "@/modules/interface/acars.interface";
+import MessageFilter from "./MessageFilter/MessageFilter";
 
 function getFilterTextWithCount(text: string, count: number): string {
   return `${text} (${count})`;
@@ -103,13 +64,8 @@ const todayTimeRange = getTodayTimeRange();
 export default function Home() {
   const [timeRange, setTimeRange] = useState<[Dayjs, Dayjs]>(todayTimeRange);
 
-  const [searchKey, setSearchKey] = useState("");
-  const searchKeyRef = useRef("");
-
   const [messages, setMessages] = useState<AcarsMessage[]>([]);
   const messagesRef = useRef<AcarsMessage[]>([]);
-
-  const [displayMessages, setDisplayMessages] = useState<AcarsMessage[]>([]);
 
   const [filterLoading, setFilterLoading] = useState(false);
 
@@ -117,87 +73,6 @@ export default function Home() {
 
   const [libacarsModalOpen, setLibacarsModalOpen] = useState(false);
   const [libacars, setLibacars] = useState("{}");
-
-  const pendingSearch = useRef<{
-    pending: boolean;
-  }>({
-    pending: false,
-  });
-
-  const fieldFilters = useMemo<FieldFiltersType>(() => {
-    const filterValueCountMaps: Record<
-      FilterableKeys,
-      Map<string | boolean | null, number>
-    > = {
-      libacars: new Map<boolean, number>(),
-      freq: new Map<string, number>(),
-      label: new Map<string, number>(),
-      regNo: new Map<string | null, number>(),
-      flightNo: new Map<string | null, number>(),
-      msgNo: new Map<string | null, number>(),
-      ack: new Map<string | null, number>(),
-    };
-
-    // Process libacars individually
-    const keys: FilterableKeys[] = [
-      "freq",
-      "label",
-      "regNo",
-      "flightNo",
-      "msgNo",
-      "ack",
-    ];
-
-    for (const message of displayMessages) {
-      for (const key of keys) {
-        if (filterValueCountMaps[key].has(message[key])) {
-          filterValueCountMaps[key].set(
-            message[key],
-            filterValueCountMaps[key].get(message[key])! + 1,
-          );
-        } else {
-          filterValueCountMaps[key].set(message[key], 1);
-        }
-      }
-
-      const libacars = Boolean(message.libacars);
-
-      if (filterValueCountMaps.libacars.has(libacars)) {
-        filterValueCountMaps.libacars.set(
-          libacars,
-          filterValueCountMaps.libacars.get(libacars)! + 1,
-        );
-      } else {
-        filterValueCountMaps.libacars.set(libacars, 1);
-      }
-    }
-
-    const fieldFiltersResult: FieldFiltersType =
-      {} as unknown as FieldFiltersType;
-
-    for (const key of keys) {
-      fieldFiltersResult[key] = Array.from(filterValueCountMaps[key])
-        .sort((a, b) =>
-          stringCompare(
-            (a[0] as string | null) ?? "",
-            (b[0] as string | null) ?? "",
-          ),
-        )
-        .map(x => ({
-          value: x[0],
-          count: x[1],
-        })) as any;
-    }
-
-    fieldFiltersResult.libacars = Array.from(filterValueCountMaps.libacars)
-      .sort((a, b) => Number(b[0] as boolean) - Number(a[0] as boolean))
-      .map(x => ({
-        value: x[0],
-        count: x[1],
-      })) as ValueCountType<boolean>[];
-
-    return fieldFiltersResult as FieldFiltersType;
-  }, [displayMessages]);
 
   const columns = useMemo<TableProps<AcarsMessage>["columns"]>(
     () => [
@@ -207,15 +82,6 @@ export default function Home() {
         key: "text",
         align: "center",
         sorter: getStringSorter("text"),
-        filters: fieldFilters.libacars.map(x => ({
-          text: getFilterTextWithCount(
-            x.value ? "libacars decoded" : "Not decoded",
-            x.count,
-          ),
-          value: x.value,
-        })),
-        filterMode: "tree",
-        onFilter: (value, record) => value === Boolean(record.libacars),
         render: (text, record) => (
           <Flex
             vertical
@@ -271,14 +137,6 @@ export default function Home() {
         align: "center",
         sorter: (a, b) =>
           parseFloat(a.freq) - parseFloat(b.freq) || a.level - b.level,
-        filters: fieldFilters.freq.map(x => ({
-          text: getFilterTextWithCount(x.value + "MHz", x.count),
-          value: x.value,
-        })),
-        filterMode: "tree",
-        filterSearch: (input, record) =>
-          ((record.value as string) + "MHz").includes(input),
-        onFilter: (value, record) => value === record.freq,
         render: (freq, record) => (
           <Flex
             vertical
@@ -296,14 +154,6 @@ export default function Home() {
         key: "label",
         align: "center",
         sorter: getStringSorter("label"),
-        filters: fieldFilters.label.map(x => ({
-          text: getFilterTextWithCount(x.value, x.count),
-          value: x.value,
-        })),
-        filterMode: "tree",
-        filterSearch: (input, record) =>
-          (record.value as string).includes(input),
-        onFilter: (value, record) => value === record.label,
         render: (label, record) => (
           <Flex
             justify="center"
@@ -331,17 +181,6 @@ export default function Home() {
         key: "regNo",
         align: "center",
         sorter: getStringSorter("regNo"),
-        filters: fieldFilters.regNo.map(x => ({
-          text: getFilterTextWithCount(x.value ?? "(Empty)", x.count),
-          value: x.value as any,
-        })),
-        filterMode: "tree",
-        filterSearch: (input, record) =>
-          ((record.value as string) === "null"
-            ? "(Empty)"
-            : (record.value as string)
-          ).includes(input),
-        onFilter: (value, record) => value === record.regNo,
         render: (regNo, record) =>
           regNo && (
             <Tooltip title={record.aircraftDescription}>
@@ -363,17 +202,6 @@ export default function Home() {
         key: "flightNo",
         align: "center",
         sorter: getStringSorter("flightNo"),
-        filters: fieldFilters.flightNo.map(x => ({
-          text: getFilterTextWithCount(x.value ?? "(Empty)", x.count),
-          value: x.value as any,
-        })),
-        filterMode: "tree",
-        filterSearch: (input, record) =>
-          ((record.value as string) === "null"
-            ? "(Empty)"
-            : (record.value as string)
-          ).includes(input),
-        onFilter: (value, record) => value === record.flightNo,
         render: (flightNo, record) =>
           flightNo && (
             <Tooltip title={record.airlineDescription}>
@@ -395,17 +223,6 @@ export default function Home() {
         key: "msgNo",
         align: "center",
         sorter: getStringSorter("msgNo"),
-        filters: fieldFilters.msgNo.map(x => ({
-          text: getFilterTextWithCount(x.value ?? "(Empty)", x.count),
-          value: x.value as any,
-        })),
-        filterMode: "tree",
-        filterSearch: (input, record) =>
-          ((record.value as string) === "null"
-            ? "(Empty)"
-            : (record.value as string)
-          ).includes(input),
-        onFilter: (value, record) => value === record.msgNo,
         render: msgNo =>
           msgNo && (
             <Flex
@@ -424,17 +241,6 @@ export default function Home() {
         key: "ack",
         align: "center",
         sorter: (a, b) => stringCompare(a.ack ?? "NACK", b.ack ?? "NACK"),
-        filters: fieldFilters.ack.map(x => ({
-          text: getFilterTextWithCount(x.value ?? "NACK", x.count),
-          value: x.value as any,
-        })),
-        filterMode: "tree",
-        filterSearch: (input, record) =>
-          ((record.value as string) === "null"
-            ? "NACK"
-            : (record.value as string)
-          ).includes(input),
-        onFilter: (value, record) => value === record.ack,
         render: ack => (
           <Flex
             justify="center"
@@ -460,53 +266,32 @@ export default function Home() {
             <span>Error: {record.error}</span>
             <span>Mode: {record.mode}</span>
             {record.blockId && <span>Block ID: {record.blockId}</span>}
+            <span>
+              Reasm: {getReassemblyStatusString(record.reassemblyStatus)}
+            </span>
           </Flex>
         ),
       },
     ],
-    [fieldFilters],
+    [],
   );
-
-  const applySearch = useCallback(() => {
-    if (pendingSearch.current.pending) {
-      return;
-    }
-
-    pendingSearch.current.pending = true;
-
-    setTimeout(() => {
-      if (searchKeyRef.current === "") {
-        setDisplayMessages(messagesRef.current);
-      } else {
-        setDisplayMessages(
-          messagesRef.current.filter(
-            x =>
-              x.text &&
-              x.text.toLowerCase().includes(searchKeyRef.current.toLowerCase()),
-          ),
-        );
-      }
-
-      pendingSearch.current.pending = false;
-    }, 100);
-  }, []);
 
   const syncMessages = useCallback(() => {
     setFilterLoading(true);
 
-    handleRequest(
-      GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
-        startS: timeRange[0].unix(),
-        endS: timeRange[1].unix(),
-      }),
-      {
-        onSuccess: (data: AcarsMessage[]) => {
-          setMessages(data);
-          messagesRef.current = data;
-        },
-        onFinish: () => setFilterLoading(false),
-      },
-    );
+    // handleRequest(
+    //   GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
+    //     startS: timeRange[0].unix(),
+    //     endS: timeRange[1].unix(),
+    //   }),
+    //   {
+    //     onSuccess: (data: AcarsMessage[]) => {
+    //       setMessages(data);
+    //       messagesRef.current = data;
+    //     },
+    //     onFinish: () => setFilterLoading(false),
+    //   },
+    // );
   }, [timeRange]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -519,7 +304,6 @@ export default function Home() {
   }, [syncMessages]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(applySearch, [searchKey, messages]);
 
   useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
 
@@ -528,44 +312,13 @@ export default function Home() {
       <Nav />
       <Flex className={styles.flexContentWrapper} vertical gap={20}>
         <Flex gap={20} align="center" wrap>
-          <Flex gap={10}>
-            <DatePicker.RangePicker
-              showTime
-              defaultValue={todayTimeRange}
-              onChange={range => {
-                if (range && range[0] && range[1]) {
-                  setTimeRange(range as [Dayjs, Dayjs]);
-                }
-              }}
-            />
+          <MessageFilter onFilter={e => {}} />
 
-            <Button
-              onClick={syncMessages}
-              type="text"
-              shape="circle"
-              icon={<SyncOutlined />}
-              loading={filterLoading}
-            />
-          </Flex>
-
-          <Flex gap={10}>
-            <Input
-              className={styles.inSearch}
-              placeholder="Search ACARS text"
-              value={searchKey}
-              onChange={e => {
-                setSearchKey(e.target.value);
-                searchKeyRef.current = e.target.value;
-              }}
-              allowClear
-            />
-          </Flex>
-
-          <Tag color={displayMessages.length ? "green" : "default"}>
-            {displayMessages.length
-              ? displayMessages.length > 1
-                ? `${displayMessages.length} Messages`
-                : `${displayMessages.length} Message`
+          <Tag color={messages.length ? "green" : "default"}>
+            {messages.length
+              ? messages.length > 1
+                ? `${messages.length} Messages`
+                : `${messages.length} Message`
               : "No Message"}
           </Tag>
 
@@ -577,14 +330,14 @@ export default function Home() {
             className={styles.btnExport}
             disabled={messages.length === 0}
             onClick={() => {
-              window.open(
-                getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
-                  "?" +
-                  new URLSearchParams({
-                    startS: timeRange[0].unix().toString(),
-                    endS: timeRange[1].unix().toString(),
-                  }),
-              );
+              // window.open(
+              //   getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
+              //     "?" +
+              //     new URLSearchParams({
+              //       startS: timeRange[0].unix().toString(),
+              //       endS: timeRange[1].unix().toString(),
+              //     }),
+              // );
             }}
             type="primary"
             icon={<ExportOutlined />}>
@@ -596,7 +349,7 @@ export default function Home() {
           <List
             className={styles.tableListAcars}
             bordered
-            dataSource={displayMessages}
+            dataSource={messages}
             pagination={{
               defaultPageSize: 30,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
@@ -683,7 +436,7 @@ export default function Home() {
             className={styles.tableListAcars}
             rowKey="id"
             columns={columns}
-            dataSource={displayMessages}
+            dataSource={messages}
             pagination={{
               defaultPageSize: 30,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
