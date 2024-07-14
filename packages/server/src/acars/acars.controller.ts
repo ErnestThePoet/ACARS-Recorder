@@ -7,12 +7,12 @@ import { Response } from "express";
 export class AcarsController {
   constructor(private readonly acarsService: AcarsService) {}
 
-  @Get("messages_in_time_range")
+  @Get("get_messages")
   getMessages(@Query() dto: GetMessagesDto) {
     return this.acarsService.getMessages(dto);
   }
 
-  @Get("export_messages_in_time_range")
+  @Get("export_messages")
   exportMessages(@Query() dto: GetMessagesDto, @Res() res: Response) {
     this.acarsService.exportMessages(dto, res);
   }
