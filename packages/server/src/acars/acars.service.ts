@@ -1,9 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Acars } from "./acars.model";
-import { GetMessagesDto, GetStatisticsDto } from "./acars.dto";
+import {
+  ExportMessagesDto,
+  GetMessagesDto,
+  GetStatisticsDto,
+} from "./acars.dto";
 import { ResponseType } from "src/common/interface/response.interface";
-import { GetAcarsMessageElement, GetStatisticsResponse } from "./acars.interface";
+import {
+  GetAcarsMessageElement,
+  GetStatisticsResponse,
+} from "./acars.interface";
 import { successRes } from "src/common/response";
 import { Op, WhereOptions } from "sequelize";
 import { Response } from "express";
@@ -27,7 +34,7 @@ export class AcarsService {
     private readonly acarsDatasetManager: AcarsDatasetManager,
   ) {}
 
-  private getAcarsModelWhere(dto: GetMessagesDto): WhereOptions<Acars> {
+  private getAcarsModelWhere(dto: ExportMessagesDto): WhereOptions<Acars> {
     const conditions: any[] = [
       {
         time: {
@@ -101,16 +108,18 @@ export class AcarsService {
       [Op.and]: conditions,
     };
   }
-  
-  async getStatistics(dto: GetStatisticsDto): Promise<ResponseType<GetStatisticsResponse>>{
-    
-  }
+
+  async getStatistics(
+    dto: GetStatisticsDto,
+  ): Promise<ResponseType<GetStatisticsResponse>> {}
 
   async getMessages(
     dto: GetMessagesDto,
   ): Promise<ResponseType<GetAcarsMessageElement[]>> {
     const result = await this.acarsModel.findAll({
       where: this.getAcarsModelWhere(dto),
+      offset: dto.pageIndex * dto.pageSize,
+      limit: dto.pageSize,
     });
 
     return successRes(
@@ -145,7 +154,7 @@ export class AcarsService {
     );
   }
 
-  async exportMessages(dto: GetMessagesDto, res: Response) {
+  async exportMessages(dto: ExportMessagesDto, res: Response) {
     const startS = parseFloat(dto.startS);
     const endS = parseFloat(dto.endS);
 

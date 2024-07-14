@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Res } from "@nestjs/common";
 import { AcarsService } from "./acars.service";
-import { GetMessagesDto } from "./acars.dto";
+import { ExportMessagesDto, GetMessagesDto } from "./acars.dto";
 import { Response } from "express";
 
 @Controller("acars")
@@ -13,7 +13,7 @@ export class AcarsController {
   }
 
   @Get("export_messages")
-  exportMessages(@Query() dto: GetMessagesDto, @Res() res: Response) {
+  exportMessages(@Query() dto: ExportMessagesDto, @Res() res: Response) {
     this.acarsService.exportMessages(dto, res);
   }
 }

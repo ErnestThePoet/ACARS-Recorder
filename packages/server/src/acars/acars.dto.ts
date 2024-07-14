@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsEnum,
+  IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
@@ -26,7 +27,7 @@ class StartEndSDto {
   endS: string;
 }
 
-export class GetMessagesDto extends StartEndSDto {
+export class ExportMessagesDto extends StartEndSDto {
   @IsOptional()
   @IsString({
     message: '"freq" field invalid',
@@ -109,6 +110,32 @@ export class GetMessagesDto extends StartEndSDto {
     message: '"text" field invalid',
   })
   text: string | null;
+}
+
+export class GetMessagesDto extends ExportMessagesDto {
+  @IsNumber(
+    {
+      allowInfinity: false,
+      allowNaN: false,
+      maxDecimalPlaces: 0,
+    },
+    {
+      message: '"pageIndex" field invalid',
+    },
+  )
+  pageIndex: number;
+
+  @IsNumber(
+    {
+      allowInfinity: false,
+      allowNaN: false,
+      maxDecimalPlaces: 0,
+    },
+    {
+      message: '"pageSize" field invalid',
+    },
+  )
+  pageSize: number;
 }
 
 export class GetStatisticsDto extends StartEndSDto {
