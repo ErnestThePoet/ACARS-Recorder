@@ -1,6 +1,14 @@
-import { IsNumberString, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumberString,
+  IsOptional,
+  IsString,
+} from "class-validator";
+import { AcarsEntity } from "./acars.model";
+import { ReassemblyStatus } from "src/common/reassembly";
 
-export class GetAllMessagesInTimeRangeDto {
+class StartEndSDto {
   @IsNumberString(
     {},
     {
@@ -18,23 +26,92 @@ export class GetAllMessagesInTimeRangeDto {
   endS: string;
 }
 
-export class GetStatisticsDto {
-  @IsNumberString(
-    {},
-    {
-      message: '"startS" field invalid',
-    },
-  )
-  startS: string;
+export class GetMessagesDto extends StartEndSDto {
+  @IsOptional()
+  @IsString({
+    message: '"freq" field invalid',
+    each: true,
+  })
+  freq: AcarsEntity["freq"][] | null;
 
-  @IsNumberString(
-    {},
-    {
-      message: '"endS" field invalid',
-    },
-  )
-  endS: string;
+  @IsOptional()
+  @IsString({
+    message: '"mode" field invalid',
+    each: true,
+  })
+  mode: AcarsEntity["mode"][] | null;
 
+  @IsOptional()
+  @IsString({
+    message: '"label" field invalid',
+    each: true,
+  })
+  label: AcarsEntity["label"][] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"subLabel" field invalid',
+    each: true,
+  })
+  subLabel: AcarsEntity["subLabel"][] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"blockId" field invalid',
+    each: true,
+  })
+  blockId: AcarsEntity["blockId"][] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"regNo" field invalid',
+    each: true,
+  })
+  regNo: AcarsEntity["regNo"][] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"flightNo" field invalid',
+    each: true,
+  })
+  flightNo: AcarsEntity["flightNo"][] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"msgNo" field invalid',
+    each: true,
+  })
+  msgNo: AcarsEntity["msgNo"][] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"ack" field invalid',
+    each: true,
+  })
+  ack: AcarsEntity["ack"][] | null;
+
+  @IsOptional()
+  @IsEnum(ReassemblyStatus, {
+    message: '"reassemblyStatus" field invalid',
+    each: true,
+  })
+  reassemblyStatus: AcarsEntity["reassemblyStatus"][] | null;
+
+  @IsOptional()
+  @IsBoolean({
+    message: '"libacars" field invalid',
+    each: true,
+  })
+  libacars: boolean[] | null;
+
+  @IsOptional()
+  @IsString({
+    message: '"text" field invalid',
+  })
+  text: string | null;
+}
+
+export class GetStatisticsDto extends StartEndSDto {
   @IsString({
     message: '"text" field invalid',
   })

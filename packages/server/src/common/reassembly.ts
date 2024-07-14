@@ -28,6 +28,28 @@ export function getReassemblyStatus(assstat: string | null): ReassemblyStatus {
   }
 }
 
+export function getReassemblyStatusString(
+  reassemblyStatus: ReassemblyStatus,
+): string {
+  switch (reassemblyStatus) {
+    case ReassemblyStatus.COMPLETE:
+      return "Complete";
+    case ReassemblyStatus.IN_PROGRESS:
+      return "In Progress";
+    case ReassemblyStatus.SKIPPED:
+      return "Skipped";
+    case ReassemblyStatus.DUPLICATE:
+      return "Duplicate";
+    case ReassemblyStatus.FRAG_OUT_OF_SEQUENCE:
+      return "Out of Sequence";
+    case ReassemblyStatus.ARGS_INVALID:
+      return "Invalid";
+    case ReassemblyStatus.UNKNOWN:
+    default:
+      return "Unknown";
+  }
+}
+
 function charCode(char: string) {
   return char.charCodeAt(0);
 }

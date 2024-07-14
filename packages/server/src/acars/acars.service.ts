@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Acars } from "./acars.model";
-import { GetAllMessagesInTimeRangeDto } from "./acars.dto";
+import { GetMessagesDto } from "./acars.dto";
 import { ResponseType } from "src/common/interface/response.interface";
 import { GetAcarsMessageElement } from "./acars.interface";
 import { successRes } from "src/common/response";
-import { Op } from "sequelize";
+import { Op, WhereOptions } from "sequelize";
 import { Response } from "express";
 import * as ExcelJS from "exceljs";
 import {
@@ -17,6 +17,8 @@ import {
   LOCAL_TIMEZONE_NAME,
   LOCAL_TIMEZONE_OFFSET,
 } from "src/common/constants";
+import { getReassemblyStatusString } from "src/common/reassembly";
+import sequelize from "sequelize";
 
 @Injectable()
 export class AcarsService {
@@ -25,19 +27,86 @@ export class AcarsService {
     private readonly acarsDatasetManager: AcarsDatasetManager,
   ) {}
 
-  async getAllMessagesInTimeRange(
-    dto: GetAllMessagesInTimeRangeDto,
-  ): Promise<ResponseType<GetAcarsMessageElement[]>> {
-    const startS = parseFloat(dto.startS);
-    const endS = parseFloat(dto.endS);
-
-    const result = await this.acarsModel.findAll({
-      where: {
+  private getAcarsModelWhere(dto: GetMessagesDto): WhereOptions<Acars> {
+    const conditions: any[] = [
+      {
         time: {
-          [Op.gte]: startS,
-          [Op.lte]: endS,
+          [Op.gte]: parseFloat(dto.startS),
+          [Op.lte]: parseFloat(dto.endS),
         },
       },
+    ];
+
+    for (const key of [
+      "freq",
+      "mode",
+      "label",
+      "subLabel",
+      "blockId",
+      "regNo",
+      "flightNo",
+      "msgNo",
+      "ack",
+      "reassemblyStatus",
+    ]) {
+      if (!dto[key]) {
+        continue;
+      }
+
+      const currentFilter = dto[key] as (string | number | null)[];
+
+      if (currentFilter.includes(null)) {
+        conditions.push({
+          [key]: {
+            [Op.or]: {
+              [Op.is]: null,
+              [Op.in]: currentFilter.filter(x => x !== null),
+            },
+          },
+        });
+      } else {
+        conditions.push({
+          [key]: {
+            [Op.in]: currentFilter,
+          },
+        });
+      }
+    }
+
+    if (dto.libacars && dto.libacars.length > 0) {
+      if (dto.libacars.every(x => x)) {
+        conditions.push({
+          libacars: {
+            [Op.not]: null,
+          },
+        });
+      } else if (dto.libacars.every(x => !x)) {
+        conditions.push({
+          libacars: {
+            [Op.is]: null,
+          },
+        });
+      }
+    }
+
+    if (dto.text) {
+      conditions.push(
+        sequelize.where(sequelize.fn("UPPER", sequelize.col("text")), {
+          [Op.substring]: dto.text.toUpperCase(),
+        }),
+      );
+    }
+
+    return {
+      [Op.and]: conditions,
+    };
+  }
+
+  async getMessages(
+    dto: GetMessagesDto,
+  ): Promise<ResponseType<GetAcarsMessageElement[]>> {
+    const result = await this.acarsModel.findAll({
+      where: this.getAcarsModelWhere(dto),
     });
 
     return successRes(
@@ -72,26 +141,19 @@ export class AcarsService {
     );
   }
 
-  async exportAllMessagesInTimeRange(
-    dto: GetAllMessagesInTimeRangeDto,
-    res: Response,
-  ) {
+  async exportMessages(dto: GetMessagesDto, res: Response) {
     const startS = parseFloat(dto.startS);
     const endS = parseFloat(dto.endS);
 
     const result = await this.acarsModel.findAll({
-      where: {
-        time: {
-          [Op.gte]: startS,
-          [Op.lte]: endS,
-        },
-      },
+      where: this.getAcarsModelWhere(dto),
     });
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("ACARS");
 
     sheet.addRow([
+      "Text",
       "UTC",
       LOCAL_TIMEZONE_NAME,
       "Frequency",
@@ -105,12 +167,13 @@ export class AcarsService {
       "Reg No",
       "Flight No",
       "Message No",
-      "Text",
+      "Reassembly",
       "libacars",
     ]);
 
     sheet.addRows(
       result.map(x => [
+        x.text ?? "",
         formatSTimeyMdHms(x.time),
         formatSTimeyMdHms(x.time, LOCAL_TIMEZONE_OFFSET),
         x.freq,
@@ -124,7 +187,7 @@ export class AcarsService {
         x.regNo ?? "",
         x.flightNo ?? "",
         x.msgNo ?? "",
-        x.text ?? "",
+        getReassemblyStatusString(x.reassemblyStatus),
         x.libacars ?? "",
       ]),
     );
