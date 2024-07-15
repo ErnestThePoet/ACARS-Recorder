@@ -190,10 +190,4 @@ export class GetStatisticsDto {
     },
   )
   endS: string;
-
-  @IsOptional()
-  @IsString({
-    message: '"text" field invalid',
-  })
-  text: string | null;
 }
