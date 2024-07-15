@@ -1,24 +1,11 @@
 "use client";
 
-import {
-  Button,
-  Checkbox,
-  DatePicker,
-  Flex,
-  Input,
-  List,
-  Modal,
-  Table,
-  Tag,
-  Tooltip,
-} from "antd";
+import { Button, Checkbox, Flex, List, Modal, Table, Tag, Tooltip } from "antd";
 import type { TableProps } from "antd";
-import { SyncOutlined, ExportOutlined } from "@ant-design/icons";
+import { ExportOutlined } from "@ant-design/icons";
 import styles from "./page.module.scss";
 import Nav from "./Nav/Nav";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
-import { GET, getApiUrl, handleRequest } from "@/modules/api/api";
 import { MS_PER_SEC, formatSTimeyMdHms } from "@/modules/utils/date-time.util";
 import {
   LOCAL_TIMEZONE_NAME,
@@ -35,39 +22,11 @@ import { getReassemblyStatusString } from "@/modules/reassembly";
 import { AcarsMessage } from "@/modules/interface/acars.interface";
 import MessageFilter from "./MessageFilter/MessageFilter";
 
-function getFilterTextWithCount(text: string, count: number): string {
-  return `${text} (${count})`;
-}
-
-function getTodayTimeRange(): [Dayjs, Dayjs] {
-  const now = new Date();
-  return [
-    dayjs(
-      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0),
-    ),
-    dayjs(
-      new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        23,
-        59,
-        59,
-        999,
-      ),
-    ),
-  ];
-}
-
-const todayTimeRange = getTodayTimeRange();
-
 export default function Home() {
-  const [timeRange, setTimeRange] = useState<[Dayjs, Dayjs]>(todayTimeRange);
-
   const [messages, setMessages] = useState<AcarsMessage[]>([]);
   const messagesRef = useRef<AcarsMessage[]>([]);
 
-  const [filterLoading, setFilterLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [brief, setBrief] = useState(false);
 
@@ -277,7 +236,7 @@ export default function Home() {
   );
 
   const syncMessages = useCallback(() => {
-    setFilterLoading(true);
+    setLoading(true);
 
     // handleRequest(
     //   GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
@@ -292,18 +251,13 @@ export default function Home() {
     //     onFinish: () => setFilterLoading(false),
     //   },
     // );
-  }, [timeRange]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(syncMessages, [timeRange]);
+  }, []);
 
   useEffect(() => {
     const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
 
     return () => clearInterval(refetchIntervalId);
   }, [syncMessages]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
 

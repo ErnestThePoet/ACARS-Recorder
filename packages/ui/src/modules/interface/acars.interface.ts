@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 export interface AcarsMessage {
   id: number;
   time: number;
@@ -22,16 +24,29 @@ export interface AcarsMessage {
 }
 
 export interface AcarsMessageFilterType {
-  freq: AcarsMessage["freq"][] | null;
-  mode: AcarsMessage["mode"][] | null;
-  label: AcarsMessage["label"][] | null;
-  subLabel: AcarsMessage["subLabel"][] | null;
-  blockId: AcarsMessage["blockId"][] | null;
-  regNo: AcarsMessage["regNo"][] | null;
-  flightNo: AcarsMessage["flightNo"][] | null;
-  msgNo: AcarsMessage["msgNo"][] | null;
-  ack: AcarsMessage["ack"][] | null;
-  reassemblyStatus: AcarsMessage["reassemblyStatus"][] | null;
-  libacars: boolean[] | null;
-  text: string | null;
+  startTime: Dayjs;
+  endTime: Dayjs;
+  freq: AcarsMessage["freq"][];
+  label: AcarsMessage["label"][];
+  blockId: AcarsMessage["blockId"][];
+  regNo: AcarsMessage["regNo"][];
+  flightNo: AcarsMessage["flightNo"][];
+  msgNo: AcarsMessage["msgNo"][];
+  libacars: boolean[];
+  text: string;
+}
+
+interface ValueCount<T> {
+  value: T;
+  count: number;
+}
+
+export interface StatisticsType {
+  freq: ValueCount<AcarsMessage["freq"]>[];
+  label: ValueCount<AcarsMessage["label"]>[];
+  blockId: ValueCount<AcarsMessage["blockId"]>[];
+  regNo: ValueCount<AcarsMessage["regNo"]>[];
+  flightNo: ValueCount<AcarsMessage["flightNo"]>[];
+  msgNo: ValueCount<AcarsMessage["msgNo"]>[];
+  libacars: ValueCount<boolean>[];
 }

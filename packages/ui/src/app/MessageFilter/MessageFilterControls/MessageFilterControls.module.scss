@@ -1,0 +1,12 @@
+.flexControlRow {
+  span[class="filter-label"] {
+    width: 60px;
+  }
+
+  div[class~="ant-select"] {
+    min-width: 200px;
+    max-width: 400px;
+
+    flex-grow: 1;
+  }
+}

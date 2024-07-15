@@ -1,4 +1,5 @@
 {
+  "ACARS_GET_STATISTICS": "/acars/get_statistics",
   "ACARS_GET_MESSAGES": "/acars/get_messages",
   "ACARS_EXPORT_MESSAGES": "/acars/export_messages"
 }
