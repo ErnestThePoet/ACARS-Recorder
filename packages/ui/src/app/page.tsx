@@ -32,10 +32,24 @@ import { handleRequest, POST } from "@/modules/api/api";
 
 const todayTimeRange = getTodayTimeRange();
 
+const DEFAULT_PAGE_SIZE = 30;
+
 export default function Home() {
-  const [messages, setMessages] = useState<AcarsMessage[]>([]);
+  const [totalMessagesCount, setTotalMessagesCount] = useState<number>(0);
+
+  const [currentPageMessages, setCurrentPageMessages] = useState<
+    AcarsMessage[]
+  >([]);
 
   const [queryLoading, setQueryLoading] = useState(false);
+
+  const paginationState = useRef<{
+    pageIndex: number;
+    pageSize: number;
+  }>({
+    pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
 
   const [brief, setBrief] = useState(false);
 
@@ -257,27 +271,28 @@ export default function Home() {
     [],
   );
 
-  const syncMessages = useCallback((filter: AcarsMessageFilterType) => {
+  const syncMessages = useCallback(() => {
     setQueryLoading(true);
 
     handleRequest(
       POST("ACARS_GET_MESSAGES", {
-        startS: filter.startTime.unix(),
-        endS: filter.endTime.unix(),
-        text: filter.text,
-        freq: filter.freq,
-        label: filter.label,
-        blockId: filter.blockId,
-        regNo: filter.regNo,
-        flightNo: filter.flightNo,
-        msgNo: filter.msgNo,
-        libacars: filter.libacars,
-        pageIndex: 0,
-        pageSize: 20,
+        startS: queryFilter.current.startTime.unix(),
+        endS: queryFilter.current.endTime.unix(),
+        text: queryFilter.current.text,
+        freq: queryFilter.current.freq,
+        label: queryFilter.current.label,
+        blockId: queryFilter.current.blockId,
+        regNo: queryFilter.current.regNo,
+        flightNo: queryFilter.current.flightNo,
+        msgNo: queryFilter.current.msgNo,
+        libacars: queryFilter.current.libacars,
+        pageIndex: paginationState.current.pageIndex,
+        pageSize: paginationState.current.pageSize,
       }),
       {
-        onSuccess: (data: AcarsMessage[]) => {
-          setMessages(data);
+        onSuccess: data => {
+          setCurrentPageMessages(data.currentPageMessages);
+          setTotalMessagesCount(data.totalCount);
         },
         onFinish: () => setQueryLoading(false),
       },
@@ -285,18 +300,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const refetchIntervalId = setInterval(
-      () => syncMessages(queryFilter.current),
-      10 * MS_PER_SEC,
-    );
+    const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
 
     return () => clearInterval(refetchIntervalId);
   }, [syncMessages]);
 
-  useEffect(() => {
-    syncMessages(queryFilter.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(syncMessages, []);
 
   useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
 
@@ -309,15 +319,15 @@ export default function Home() {
             queryLoading={queryLoading}
             onFilter={e => {
               queryFilter.current = e;
-              syncMessages(e);
+              syncMessages();
             }}
           />
 
-          <Tag color={messages.length ? "green" : "default"}>
-            {messages.length
-              ? messages.length > 1
-                ? `${messages.length} Messages`
-                : `${messages.length} Message`
+          <Tag color={totalMessagesCount ? "green" : "default"}>
+            {totalMessagesCount
+              ? totalMessagesCount > 1
+                ? `${totalMessagesCount} Messages`
+                : `${totalMessagesCount} Message`
               : "No Message"}
           </Tag>
 
@@ -327,7 +337,7 @@ export default function Home() {
 
           <Button
             className={styles.btnExport}
-            disabled={messages.length === 0}
+            disabled={currentPageMessages.length === 0}
             onClick={() => {
               // window.open(
               //   getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
@@ -348,7 +358,7 @@ export default function Home() {
           <List
             className={styles.tableListAcars}
             bordered
-            dataSource={messages}
+            dataSource={currentPageMessages}
             pagination={{
               defaultPageSize: 30,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
@@ -435,12 +445,21 @@ export default function Home() {
             className={styles.tableListAcars}
             rowKey="id"
             columns={columns}
-            dataSource={messages}
+            dataSource={currentPageMessages}
             pagination={{
-              defaultPageSize: 30,
+              defaultPageSize: DEFAULT_PAGE_SIZE,
+              total: totalMessagesCount,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
               showSizeChanger: true,
               showQuickJumper: true,
+              onChange: (page, pageSize) => {
+                paginationState.current = {
+                  pageIndex: page - 1,
+                  pageSize,
+                };
+
+                syncMessages();
+              },
             }}
           />
         )}

@@ -22,9 +22,14 @@ export interface GetStatisticsResponse {
   };
 }
 
-export type GetAcarsMessageElement = AcarsEntity &
+export type GetMessageElement = AcarsEntity &
   IdEntity & {
     labelDescription: string | null;
     aircraftDescription: string | null;
     airlineDescription: string | null;
   };
+
+export interface GetMessagesResponse {
+  totalCount: number;
+  currentPageMessages: GetMessageElement[];
+}

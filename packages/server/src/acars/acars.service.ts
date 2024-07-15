@@ -8,7 +8,8 @@ import {
 } from "./acars.dto";
 import { ResponseType } from "src/common/interface/response.interface";
 import {
-  GetAcarsMessageElement,
+  GetMessageElement,
+  GetMessagesResponse,
   GetStatisticsResponse,
 } from "./acars.interface";
 import { successRes } from "src/common/response";
@@ -186,15 +187,16 @@ export class AcarsService {
 
   async getMessages(
     dto: GetMessagesDto,
-  ): Promise<ResponseType<GetAcarsMessageElement[]>> {
-    const result = await this.acarsModel.findAll({
+  ): Promise<ResponseType<GetMessagesResponse>> {
+    const result = await this.acarsModel.findAndCountAll({
       where: this.getAcarsModelExportWhere(dto),
       offset: dto.pageIndex * dto.pageSize,
       limit: dto.pageSize,
     });
 
-    return successRes(
-      result.map<GetAcarsMessageElement>(x => ({
+    return successRes({
+      totalCount: result.count,
+      currentPageMessages: result.rows.map<GetMessageElement>(x => ({
         id: x.id,
         time: x.time,
         freq: x.freq,
@@ -222,7 +224,7 @@ export class AcarsService {
             ? null
             : this.acarsDatasetManager.getAirlineDescription(x.flightNo),
       })),
-    );
+    });
   }
 
   async exportMessages(dto: ExportMessagesDto, res: Response) {
