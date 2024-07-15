@@ -23,7 +23,7 @@ import {
   AcarsMessageFilterType,
 } from "@/modules/interface/acars.interface";
 import MessageFilter from "./MessageFilter/MessageFilter";
-import { handleRequest, POST } from "@/modules/api/api";
+import { getApiUrl, handleRequest, POST } from "@/modules/api/api";
 import { OrderDirection } from "@/modules/order-direction";
 
 const todayTimeRange = getTodayTimeRange();
@@ -40,6 +40,7 @@ export default function Home() {
   });
 
   const [queryLoading, setQueryLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const paginationState = useRef<{
     pageIndex: number;
@@ -323,15 +324,40 @@ export default function Home() {
           <Button
             className={styles.btnExport}
             disabled={messages.totalCount === 0}
-            onClick={() => {
-              // window.open(
-              //   getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
-              //     "?" +
-              //     new URLSearchParams({
-              //       startS: timeRange[0].unix().toString(),
-              //       endS: timeRange[1].unix().toString(),
-              //     }),
-              // );
+            loading={exportLoading}
+            onClick={async () => {
+              setExportLoading(true);
+
+              const response = await fetch(getApiUrl("ACARS_EXPORT_MESSAGES"), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  startS: queryFilter.current.startTime.unix(),
+                  endS: queryFilter.current.endTime.unix(),
+                  text: queryFilter.current.text,
+                  freq: queryFilter.current.freq,
+                  label: queryFilter.current.label,
+                  blockId: queryFilter.current.blockId,
+                  regNo: queryFilter.current.regNo,
+                  flightNo: queryFilter.current.flightNo,
+                  msgNo: queryFilter.current.msgNo,
+                  libacars: queryFilter.current.libacars,
+                }),
+              });
+
+              const blob = await response.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download =
+                response.headers
+                  .get("Content-Disposition")
+                  ?.split("filename=")[1] ?? "export.xlsx";
+              a.click();
+
+              setExportLoading(false);
             }}
             type="primary"
             icon={<ExportOutlined />}>
