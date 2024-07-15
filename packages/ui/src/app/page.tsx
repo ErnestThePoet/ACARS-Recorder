@@ -35,11 +35,13 @@ const todayTimeRange = getTodayTimeRange();
 const DEFAULT_PAGE_SIZE = 30;
 
 export default function Home() {
-  const [totalMessagesCount, setTotalMessagesCount] = useState<number>(0);
-
-  const [currentPageMessages, setCurrentPageMessages] = useState<
-    AcarsMessage[]
-  >([]);
+  const [messages, setMessages] = useState<{
+    totalCount: number;
+    currentPageMessages: AcarsMessage[];
+  }>({
+    totalCount: 0,
+    currentPageMessages: [],
+  });
 
   const [queryLoading, setQueryLoading] = useState(false);
 
@@ -291,8 +293,7 @@ export default function Home() {
       }),
       {
         onSuccess: data => {
-          setCurrentPageMessages(data.currentPageMessages);
-          setTotalMessagesCount(data.totalCount);
+          setMessages(data);
         },
         onFinish: () => setQueryLoading(false),
       },
@@ -323,11 +324,11 @@ export default function Home() {
             }}
           />
 
-          <Tag color={totalMessagesCount ? "green" : "default"}>
-            {totalMessagesCount
-              ? totalMessagesCount > 1
-                ? `${totalMessagesCount} Messages`
-                : `${totalMessagesCount} Message`
+          <Tag color={messages.totalCount ? "green" : "default"}>
+            {messages.totalCount
+              ? messages.totalCount > 1
+                ? `${messages.totalCount} Messages`
+                : `${messages.totalCount} Message`
               : "No Message"}
           </Tag>
 
@@ -337,7 +338,7 @@ export default function Home() {
 
           <Button
             className={styles.btnExport}
-            disabled={currentPageMessages.length === 0}
+            disabled={messages.totalCount === 0}
             onClick={() => {
               // window.open(
               //   getApiUrl("ACARS_EXPORT_ALL_MESSAGES_IN_TIME_RANGE") +
@@ -358,7 +359,7 @@ export default function Home() {
           <List
             className={styles.tableListAcars}
             bordered
-            dataSource={currentPageMessages}
+            dataSource={messages.currentPageMessages}
             pagination={{
               defaultPageSize: 30,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
@@ -445,10 +446,10 @@ export default function Home() {
             className={styles.tableListAcars}
             rowKey="id"
             columns={columns}
-            dataSource={currentPageMessages}
+            dataSource={messages.currentPageMessages}
             pagination={{
               defaultPageSize: DEFAULT_PAGE_SIZE,
-              total: totalMessagesCount,
+              total: messages.totalCount,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
               showSizeChanger: true,
               showQuickJumper: true,
