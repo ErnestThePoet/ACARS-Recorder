@@ -7,7 +7,6 @@ interface ValueCount<T> {
 }
 
 export interface GetStatisticsResponse {
-  count: number;
   filters: {
     freq: ValueCount<AcarsEntity["freq"]>[];
     // mode: ValueCount<AcarsEntity["mode"]>[];

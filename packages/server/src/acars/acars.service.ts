@@ -114,7 +114,6 @@ export class AcarsService {
     }
 
     const result: GetStatisticsResponse = {
-      count: 0,
       filters: {},
     } as GetStatisticsResponse;
 
@@ -172,10 +171,10 @@ export class AcarsService {
     ]);
 
     // Save one dedicated count query
-    result.count = result.filters.freq.reduce((p, c) => p + c.count, 0);
+    const totalCount = result.filters.freq.reduce((p, c) => p + c.count, 0);
 
     result.filters.libacars[1].count =
-      result.count - result.filters.libacars[0].count;
+      totalCount - result.filters.libacars[0].count;
 
     return successRes(result);
   }
