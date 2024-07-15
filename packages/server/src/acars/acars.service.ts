@@ -90,7 +90,7 @@ export class AcarsService {
 
     if (dto.text) {
       queryWhere.text = {
-        [Op.substring]: dto.text.toUpperCase(),
+        [Op.substring]: dto.text,
       };
     }
 
