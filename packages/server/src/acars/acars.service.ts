@@ -58,7 +58,7 @@ export class AcarsService {
     ]) {
       const currentFilter = dto[key] as (string | number | null)[];
 
-      if (currentFilter.length === 0) {
+      if (!currentFilter || currentFilter.length === 0) {
         continue;
       }
 
