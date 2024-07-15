@@ -136,28 +136,23 @@ export default function Home() {
           parseFloat(a.freq) - parseFloat(b.freq) || a.level - b.level,
         render: (freq, record) => (
           <Flex
-            vertical
-            style={{
-              width: "80px",
-            }}>
+            vertical>
             <span>{freq}MHz</span>
             <span>{record.level.toFixed(1)}dBm</span>
           </Flex>
         ),
       },
       {
-        title: "Label",
+        title: "Label/Sub Label",
         dataIndex: "label",
         key: "label",
         align: "center",
         sorter: getStringSorter("label"),
         render: (label, record) => (
           <Flex
-            justify="center"
-            gap={5}
-            style={{
-              width: "80px",
-            }}>
+            vertical
+            align="center"
+            gap={6}>
             <Tooltip title={record.labelDescription}>
               <Tag
                 className={classNames({
@@ -173,79 +168,57 @@ export default function Home() {
         ),
       },
       {
-        title: "AC Reg",
-        dataIndex: "regNo",
-        key: "regNo",
-        align: "center",
-        sorter: getStringSorter("regNo"),
-        render: (regNo, record) =>
-          regNo && (
-            <Tooltip title={record.aircraftDescription}>
-              <div
-                className={classNames({
-                  [styles.withTooltip]: record.aircraftDescription !== null,
-                })}
-                style={{
-                  width: "90px",
-                }}>
-                {regNo}
-              </div>
-            </Tooltip>
-          ),
-      },
-      {
-        title: "Flight",
+        title: "Flight/AC Reg",
         dataIndex: "flightNo",
         key: "flightNo",
         align: "center",
         sorter: getStringSorter("flightNo"),
-        render: (flightNo, record) =>
-          flightNo && (
-            <Tooltip title={record.airlineDescription}>
-              <div
-                className={classNames({
-                  [styles.withTooltip]: record.airlineDescription !== null,
-                })}
-                style={{
-                  width: "80px",
-                }}>
-                {flightNo}
-              </div>
-            </Tooltip>
-          ),
-      },
-      {
-        title: "Msg No",
-        dataIndex: "msgNo",
-        key: "msgNo",
-        align: "center",
-        sorter: getStringSorter("msgNo"),
-        render: msgNo =>
-          msgNo && (
-            <Flex
-              justify="center"
-              align="center"
-              style={{
-                width: "90px",
-              }}>
-              <Tag color="cyan">{msgNo}</Tag>
-            </Flex>
-          ),
-      },
-      {
-        title: "ACK",
-        dataIndex: "ack",
-        key: "ack",
-        align: "center",
-        sorter: (a, b) => stringCompare(a.ack ?? "NACK", b.ack ?? "NACK"),
-        render: ack => (
+        render: (flightNo, record) => (
           <Flex
-            justify="center"
+            vertical
             align="center"
             style={{
-              width: "70px",
+              width: "90px",
             }}>
-            <Tag color="purple">{ack ?? "NACK"}</Tag>
+            {flightNo && (
+              <Tooltip title={record.airlineDescription}>
+                <div
+                  className={classNames({
+                    [styles.withTooltip]: record.airlineDescription !== null,
+                  })}>
+                  {flightNo}
+                </div>
+              </Tooltip>
+            )}
+            {record.regNo && (
+              <Tooltip title={record.aircraftDescription}>
+                <div
+                  className={classNames({
+                    [styles.withTooltip]: record.aircraftDescription !== null,
+                  })}>
+                  {record.regNo}
+                </div>
+              </Tooltip>
+            )}
+          </Flex>
+        ),
+      },
+      {
+        title: "Blk ID/Msg No",
+        dataIndex: "blockId",
+        key: "blockId",
+        align: "center",
+        sorter: getStringSorter("blockId"),
+        render: (blockId, record) => (
+          <Flex
+            vertical
+            align="center"
+            gap={6}
+            style={{
+              width: "90px",
+            }}>
+            {blockId && <Tag color="purple">{blockId}</Tag>}
+            {record.msgNo && <Tag color="cyan">{record.msgNo}</Tag>}
           </Flex>
         ),
       },
@@ -258,11 +231,12 @@ export default function Home() {
             vertical
             align="flex-start"
             style={{
-              width: "80px",
+              width: "110px",
+              wordBreak: "break-all",
             }}>
             <span>Error: {record.error}</span>
             <span>Mode: {record.mode}</span>
-            {record.blockId && <span>Block ID: {record.blockId}</span>}
+            <span>ACK: {record.ack ?? "NACK"}</span>
             <span>
               Reasm: {getReassemblyStatusString(record.reassemblyStatus)}
             </span>

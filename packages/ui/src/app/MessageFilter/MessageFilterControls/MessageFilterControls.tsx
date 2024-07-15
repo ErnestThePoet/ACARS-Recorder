@@ -72,7 +72,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
   onChange,
 }) => {
   return (
-    <Flex vertical gap={10}>
+    <Flex vertical gap={6}>
       <DatePicker.RangePicker
         showTime
         value={[filter.startTime, filter.endTime]}
@@ -87,7 +87,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
       />
 
       <Spin spinning={selectsLoading}>
-        <Flex gap={10} wrap>
+        <Flex gap={6} wrap>
           {FILTER_SELECTS.map(x => (
             <Flex className={styles.flexControlRow} key={x.key} align="center">
               <span className="filter-label">{x.label}:</span>
