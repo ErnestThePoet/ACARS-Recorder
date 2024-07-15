@@ -6,7 +6,11 @@ import { ExportOutlined } from "@ant-design/icons";
 import styles from "./page.module.scss";
 import Nav from "./Nav/Nav";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MS_PER_SEC, formatSTimeyMdHms } from "@/modules/utils/date-time.util";
+import {
+  MS_PER_SEC,
+  formatSTimeyMdHms,
+  getTodayTimeRange,
+} from "@/modules/utils/date-time.util";
 import {
   LOCAL_TIMEZONE_NAME,
   LOCAL_TIMEZONE_OFFSET,
@@ -19,19 +23,37 @@ import {
 import classNames from "classnames";
 import { noto_Sans_Mono } from "./fonts";
 import { getReassemblyStatusString } from "@/modules/reassembly";
-import { AcarsMessage } from "@/modules/interface/acars.interface";
+import {
+  AcarsMessage,
+  AcarsMessageFilterType,
+} from "@/modules/interface/acars.interface";
 import MessageFilter from "./MessageFilter/MessageFilter";
+import { handleRequest, POST } from "@/modules/api/api";
+
+const todayTimeRange = getTodayTimeRange();
 
 export default function Home() {
   const [messages, setMessages] = useState<AcarsMessage[]>([]);
-  const messagesRef = useRef<AcarsMessage[]>([]);
 
-  const [loading, setLoading] = useState(false);
+  const [queryLoading, setQueryLoading] = useState(false);
 
   const [brief, setBrief] = useState(false);
 
   const [libacarsModalOpen, setLibacarsModalOpen] = useState(false);
   const [libacars, setLibacars] = useState("{}");
+
+  const queryFilter = useRef<AcarsMessageFilterType>({
+    startTime: todayTimeRange[0],
+    endTime: todayTimeRange[1],
+    freq: [],
+    label: [],
+    blockId: [],
+    regNo: [],
+    flightNo: [],
+    msgNo: [],
+    libacars: [],
+    text: "",
+  });
 
   const columns = useMemo<TableProps<AcarsMessage>["columns"]>(
     () => [
@@ -235,29 +257,46 @@ export default function Home() {
     [],
   );
 
-  const syncMessages = useCallback(() => {
-    setLoading(true);
+  const syncMessages = useCallback((filter: AcarsMessageFilterType) => {
+    setQueryLoading(true);
 
-    // handleRequest(
-    //   GET("ACARS_GET_ALL_MESSAGES_IN_TIME_RANGE", {
-    //     startS: timeRange[0].unix(),
-    //     endS: timeRange[1].unix(),
-    //   }),
-    //   {
-    //     onSuccess: (data: AcarsMessage[]) => {
-    //       setMessages(data);
-    //       messagesRef.current = data;
-    //     },
-    //     onFinish: () => setFilterLoading(false),
-    //   },
-    // );
+    handleRequest(
+      POST("ACARS_GET_MESSAGES", {
+        startS: filter.startTime.unix(),
+        endS: filter.endTime.unix(),
+        text: filter.text,
+        freq: filter.freq,
+        label: filter.label,
+        blockId: filter.blockId,
+        regNo: filter.regNo,
+        flightNo: filter.flightNo,
+        msgNo: filter.msgNo,
+        libacars: filter.libacars,
+        pageIndex: 0,
+        pageSize: 20,
+      }),
+      {
+        onSuccess: (data: AcarsMessage[]) => {
+          setMessages(data);
+        },
+        onFinish: () => setQueryLoading(false),
+      },
+    );
   }, []);
 
   useEffect(() => {
-    const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
+    const refetchIntervalId = setInterval(
+      () => syncMessages(queryFilter.current),
+      10 * MS_PER_SEC,
+    );
 
     return () => clearInterval(refetchIntervalId);
   }, [syncMessages]);
+
+  useEffect(() => {
+    syncMessages(queryFilter.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
 
@@ -266,7 +305,13 @@ export default function Home() {
       <Nav />
       <Flex className={styles.flexContentWrapper} vertical gap={20}>
         <Flex gap={20} align="center" wrap>
-          <MessageFilter onFilter={e => {}} />
+          <MessageFilter
+            queryLoading={queryLoading}
+            onFilter={e => {
+              queryFilter.current = e;
+              syncMessages(e);
+            }}
+          />
 
           <Tag color={messages.length ? "green" : "default"}>
             {messages.length
