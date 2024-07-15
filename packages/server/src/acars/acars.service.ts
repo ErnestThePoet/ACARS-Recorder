@@ -289,7 +289,7 @@ export class AcarsService {
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=" +
-        `${formatSTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatSTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.xlsx`,
+        `ACARS-${formatSTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatSTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.xlsx`,
     );
 
     await workbook.xlsx.write(res);
