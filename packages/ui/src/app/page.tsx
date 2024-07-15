@@ -276,6 +276,15 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (brief) {
+      orderState.current = {
+        orderBy: null,
+        orderDirection: null,
+      };
+    }
+  }, [brief]);
+
+  useEffect(() => {
     const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
 
     return () => clearInterval(refetchIntervalId);
