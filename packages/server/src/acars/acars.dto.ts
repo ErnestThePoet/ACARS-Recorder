@@ -1,11 +1,14 @@
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
   IsNumber,
   IsNumberString,
+  IsOptional,
   IsString,
 } from "class-validator";
 import { AcarsEntity } from "./acars.model";
+import { OrderDirection } from "src/common/order-direction";
 
 export class ExportMessagesDto {
   @IsNumber(
@@ -159,6 +162,18 @@ export class GetMessagesDto extends ExportMessagesDto {
     },
   )
   pageSize: number;
+
+  @IsOptional()
+  @IsString({
+    message: '"orderBy" field invalid',
+  })
+  orderBy: string | null;
+
+  @IsOptional()
+  @IsEnum(OrderDirection, {
+    message: '"orderDirection" field invalid',
+  })
+  orderDirection: OrderDirection | null;
 }
 
 export class GetStatisticsDto {

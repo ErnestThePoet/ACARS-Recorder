@@ -15,11 +15,6 @@ import {
   LOCAL_TIMEZONE_NAME,
   LOCAL_TIMEZONE_OFFSET,
 } from "@/modules/constants";
-import {
-  getNumberSorter,
-  getStringSorter,
-  stringCompare,
-} from "@/modules/utils/sortors";
 import classNames from "classnames";
 import { noto_Sans_Mono } from "./fonts";
 import { getReassemblyStatusString } from "@/modules/reassembly";
@@ -29,6 +24,7 @@ import {
 } from "@/modules/interface/acars.interface";
 import MessageFilter from "./MessageFilter/MessageFilter";
 import { handleRequest, POST } from "@/modules/api/api";
+import { OrderDirection } from "@/modules/order-direction";
 
 const todayTimeRange = getTodayTimeRange();
 
@@ -51,6 +47,14 @@ export default function Home() {
   }>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
+  });
+
+  const orderState = useRef<{
+    orderBy: string | null;
+    orderDirection: OrderDirection | null;
+  }>({
+    orderBy: null,
+    orderDirection: null,
   });
 
   const [brief, setBrief] = useState(false);
@@ -78,7 +82,7 @@ export default function Home() {
         dataIndex: "text",
         key: "text",
         align: "center",
-        sorter: getStringSorter("text"),
+        sorter: true,
         render: (text, record) => (
           <Flex
             vertical
@@ -112,7 +116,7 @@ export default function Home() {
         dataIndex: "time",
         key: "time",
         align: "center",
-        sorter: getNumberSorter("time"),
+        sorter: true,
         render: time => (
           <Flex
             vertical
@@ -132,11 +136,9 @@ export default function Home() {
         dataIndex: "freq",
         key: "freq",
         align: "center",
-        sorter: (a, b) =>
-          parseFloat(a.freq) - parseFloat(b.freq) || a.level - b.level,
+        sorter: true,
         render: (freq, record) => (
-          <Flex
-            vertical>
+          <Flex vertical>
             <span>{freq}MHz</span>
             <span>{record.level.toFixed(1)}dBm</span>
           </Flex>
@@ -147,12 +149,9 @@ export default function Home() {
         dataIndex: "label",
         key: "label",
         align: "center",
-        sorter: getStringSorter("label"),
+        sorter: true,
         render: (label, record) => (
-          <Flex
-            vertical
-            align="center"
-            gap={6}>
+          <Flex vertical align="center" gap={6}>
             <Tooltip title={record.labelDescription}>
               <Tag
                 className={classNames({
@@ -172,7 +171,7 @@ export default function Home() {
         dataIndex: "flightNo",
         key: "flightNo",
         align: "center",
-        sorter: getStringSorter("flightNo"),
+        sorter: true,
         render: (flightNo, record) => (
           <Flex
             vertical
@@ -208,7 +207,7 @@ export default function Home() {
         dataIndex: "blockId",
         key: "blockId",
         align: "center",
-        sorter: getStringSorter("blockId"),
+        sorter: true,
         render: (blockId, record) => (
           <Flex
             vertical
@@ -264,6 +263,8 @@ export default function Home() {
         libacars: queryFilter.current.libacars,
         pageIndex: paginationState.current.pageIndex,
         pageSize: paginationState.current.pageSize,
+        orderBy: orderState.current.orderBy,
+        orderDirection: orderState.current.orderDirection,
       }),
       {
         onSuccess: data => {
@@ -421,20 +422,29 @@ export default function Home() {
             rowKey="id"
             columns={columns}
             dataSource={messages.currentPageMessages}
+            onChange={(pagination, _, sorter: any) => {
+              paginationState.current = {
+                pageIndex: pagination.current ?? 1 - 1,
+                pageSize: pagination.pageSize ?? DEFAULT_PAGE_SIZE,
+              };
+
+              orderState.current = {
+                orderBy: sorter.order ? sorter.field : null,
+                orderDirection: sorter.order
+                  ? sorter.order === "ascend"
+                    ? OrderDirection.ASC
+                    : OrderDirection.DESC
+                  : null,
+              };
+
+              syncMessages();
+            }}
             pagination={{
               defaultPageSize: DEFAULT_PAGE_SIZE,
               total: messages.totalCount,
               pageSizeOptions: [10, 20, 30, 50, 100, 200],
               showSizeChanger: true,
               showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                paginationState.current = {
-                  pageIndex: page - 1,
-                  pageSize,
-                };
-
-                syncMessages();
-              },
             }}
           />
         )}

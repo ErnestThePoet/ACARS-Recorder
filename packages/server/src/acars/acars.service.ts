@@ -192,6 +192,10 @@ export class AcarsService {
       where: this.getAcarsModelExportWhere(dto),
       offset: dto.pageIndex * dto.pageSize,
       limit: dto.pageSize,
+      order:
+        dto.orderBy && dto.orderDirection
+          ? [[dto.orderBy, dto.orderDirection]]
+          : undefined,
     });
 
     return successRes({
