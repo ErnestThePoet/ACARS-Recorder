@@ -107,12 +107,6 @@ export class AcarsService {
       },
     };
 
-    if (dto.text) {
-      queryWhere.text = {
-        [Op.substring]: dto.text,
-      };
-    }
-
     const result: GetStatisticsResponse = {
       filters: {},
     } as GetStatisticsResponse;
@@ -126,6 +120,7 @@ export class AcarsService {
         result.filters.libacars = [
           {
             value: true,
+            // Possibly 0, handle later
             count: await this.acarsModel.count({
               where: {
                 ...queryWhere,
@@ -137,7 +132,7 @@ export class AcarsService {
           },
           {
             value: false,
-            // Save one query, computed later
+            // Save one query, compute later
             count: 0,
           },
         ];
@@ -173,8 +168,18 @@ export class AcarsService {
     // Save one dedicated count query
     const totalCount = result.filters.freq.reduce((p, c) => p + c.count, 0);
 
-    result.filters.libacars[1].count =
-      totalCount - result.filters.libacars[0].count;
+    if (totalCount === 0) {
+      result.filters.libacars = [];
+    } else {
+      result.filters.libacars[1].count =
+        totalCount - result.filters.libacars[0].count;
+
+      if (result.filters.libacars[0].count === 0) {
+        result.filters.libacars = [result.filters.libacars[1]];
+      } else if (result.filters.libacars[1].count === 0) {
+        result.filters.libacars = [result.filters.libacars[0]];
+      }
+    }
 
     return successRes(result);
   }
