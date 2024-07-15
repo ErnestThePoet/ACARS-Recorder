@@ -35,14 +35,12 @@ export class AcarsService {
   ) {}
 
   private getAcarsModelWhere(dto: ExportMessagesDto): WhereOptions<Acars> {
-    const conditions: any[] = [
-      {
-        time: {
-          [Op.gte]: parseFloat(dto.startS),
-          [Op.lte]: parseFloat(dto.endS),
-        },
+    const queryWhere: WhereOptions<Acars> = {
+      time: {
+        [Op.gte]: parseFloat(dto.startS),
+        [Op.lte]: parseFloat(dto.endS),
       },
-    ];
+    };
 
     for (const key of [
       "freq",
@@ -63,55 +61,122 @@ export class AcarsService {
       const currentFilter = dto[key] as (string | number | null)[];
 
       if (currentFilter.includes(null)) {
-        conditions.push({
-          [key]: {
-            [Op.or]: {
-              [Op.is]: null,
-              [Op.in]: currentFilter.filter(x => x !== null),
-            },
+        queryWhere[key] = {
+          [Op.or]: {
+            [Op.is]: null,
+            [Op.in]: currentFilter.filter(x => x !== null),
           },
-        });
+        };
       } else {
-        conditions.push({
-          [key]: {
-            [Op.in]: currentFilter,
-          },
-        });
+        queryWhere[key] = {
+          [Op.in]: currentFilter,
+        };
       }
     }
 
     if (dto.libacars && dto.libacars.length > 0) {
       if (dto.libacars.every(x => x)) {
-        conditions.push({
-          libacars: {
-            [Op.not]: null,
-          },
-        });
+        queryWhere.libacars = {
+          [Op.not]: null,
+        };
       } else if (dto.libacars.every(x => !x)) {
-        conditions.push({
-          libacars: {
-            [Op.is]: null,
-          },
-        });
+        queryWhere.libacars = {
+          [Op.is]: null,
+        };
       }
     }
 
     if (dto.text) {
-      conditions.push(
-        sequelize.where(sequelize.fn("UPPER", sequelize.col("text")), {
-          [Op.substring]: dto.text.toUpperCase(),
-        }),
-      );
+      queryWhere.text = {
+        [Op.substring]: dto.text.toUpperCase(),
+      };
     }
 
-    return {
-      [Op.and]: conditions,
-    };
+    return queryWhere;
   }
 
   async getStatistics(
     dto: GetStatisticsDto,
-  ): Promise<ResponseType<GetStatisticsResponse>> {}
+  ): Promise<ResponseType<GetStatisticsResponse>> {
+    const queryWhere: WhereOptions<Acars> = {
+      time: {
+        [Op.gte]: parseFloat(dto.startS),
+        [Op.lte]: parseFloat(dto.endS),
+      },
+    };
+
+    if (dto.text) {
+      queryWhere.text = {
+        [Op.substring]: dto.text,
+      };
+    }
+
+    const result: GetStatisticsResponse = {
+      count: 0,
+      filters: {},
+    } as GetStatisticsResponse;
+
+    const getFilterField = async (
+      key: keyof GetStatisticsResponse["filters"],
+    ) => {
+      const countField = `${key}Count`;
+
+      if (key === "libacars") {
+        result.filters.libacars = [
+          {
+            value: true,
+            count: await this.acarsModel.count({
+              where: {
+                ...queryWhere,
+                libacars: {
+                  [Op.not]: null,
+                },
+              },
+            }),
+          },
+          {
+            value: false,
+            // Save one query, computed later
+            count: 0,
+          },
+        ];
+      } else {
+        result.filters[key] = (
+          await this.acarsModel.findAll({
+            where: queryWhere,
+            attributes: [key, [sequelize.fn("COUNT", "1"), countField]],
+            group: [key],
+          })
+        ).map(x => ({
+          value: x[key],
+          // extra field cannot be retrieved directly
+          count: x.dataValues[countField],
+        })) as any;
+      }
+    };
+
+    await Promise.all([
+      getFilterField("freq"),
+      // getFilterField("mode"),
+      getFilterField("label"),
+      // getFilterField("subLabel"),
+      getFilterField("blockId"),
+      getFilterField("regNo"),
+      getFilterField("flightNo"),
+      getFilterField("msgNo"),
+      // getFilterField("ack"),
+      // getFilterField("reassemblyStatus"),
+      getFilterField("libacars"),
+    ]);
+
+    // Save one dedicated count query
+    result.count = result.filters.freq.reduce((p, c) => p + c.count, 0);
+
+    result.filters.libacars[1].count =
+      result.count - result.filters.libacars[0].count;
+
+    return successRes(result);
+  }
 
   async getMessages(
     dto: GetMessagesDto,

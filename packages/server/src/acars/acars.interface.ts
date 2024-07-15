@@ -10,15 +10,15 @@ export interface GetStatisticsResponse {
   count: number;
   filters: {
     freq: ValueCount<AcarsEntity["freq"]>[];
-    mode: ValueCount<AcarsEntity["mode"]>[];
+    // mode: ValueCount<AcarsEntity["mode"]>[];
     label: ValueCount<AcarsEntity["label"]>[];
-    subLabel: ValueCount<AcarsEntity["subLabel"]>[];
+    // subLabel: ValueCount<AcarsEntity["subLabel"]>[];
     blockId: ValueCount<AcarsEntity["blockId"]>[];
     regNo: ValueCount<AcarsEntity["regNo"]>[];
     flightNo: ValueCount<AcarsEntity["flightNo"]>[];
     msgNo: ValueCount<AcarsEntity["msgNo"]>[];
-    ack: ValueCount<AcarsEntity["ack"]>[];
-    reassemblyStatus: ValueCount<AcarsEntity["reassemblyStatus"]>[];
+    // ack: ValueCount<AcarsEntity["ack"]>[];
+    // reassemblyStatus: ValueCount<AcarsEntity["reassemblyStatus"]>[];
     libacars: ValueCount<boolean>[];
   };
 }

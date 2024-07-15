@@ -1,11 +1,20 @@
 import { Controller, Get, Query, Res } from "@nestjs/common";
 import { AcarsService } from "./acars.service";
-import { ExportMessagesDto, GetMessagesDto } from "./acars.dto";
+import {
+  ExportMessagesDto,
+  GetMessagesDto,
+  GetStatisticsDto,
+} from "./acars.dto";
 import { Response } from "express";
 
 @Controller("acars")
 export class AcarsController {
   constructor(private readonly acarsService: AcarsService) {}
+
+  @Get("get_statistics")
+  getStatistics(@Query() dto: GetStatisticsDto) {
+    return this.acarsService.getStatistics(dto);
+  }
 
   @Get("get_messages")
   getMessages(@Query() dto: GetMessagesDto) {

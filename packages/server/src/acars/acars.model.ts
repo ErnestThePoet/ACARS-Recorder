@@ -1,11 +1,12 @@
 import { DataTypes } from "sequelize";
-import { Column, Model, Table } from "sequelize-typescript";
+import { Column, Index, Model, Table } from "sequelize-typescript";
 
 @Table({
   tableName: "acars",
 })
 export class Acars extends Model {
   @Column(DataTypes.DOUBLE)
+  @Index("idx_time")
   time: number;
 
   @Column(DataTypes.CHAR(7))
