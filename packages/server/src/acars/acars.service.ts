@@ -56,11 +56,11 @@ export class AcarsService {
       "ack",
       "reassemblyStatus",
     ]) {
-      if (!dto[key]) {
+      const currentFilter = dto[key] as (string | number | null)[];
+
+      if (currentFilter.length === 0) {
         continue;
       }
-
-      const currentFilter = dto[key] as (string | number | null)[];
 
       if (currentFilter.includes(null)) {
         queryWhere[key] = {

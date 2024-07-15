@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsNumber,
   IsNumberString,
-  IsOptional,
   IsString,
 } from "class-validator";
 import { AcarsEntity } from "./acars.model";
@@ -31,13 +30,11 @@ export class ExportMessagesDto {
   )
   endS: number;
 
-  @IsOptional()
   @IsString({
     message: '"text" field invalid',
   })
-  text: string | null;
+  text: string;
 
-  @IsOptional()
   @IsArray({
     message: '"freq" field invalid',
   })
@@ -45,9 +42,8 @@ export class ExportMessagesDto {
     message: '"freq" field invalid',
     each: true,
   })
-  freq: AcarsEntity["freq"][] | null;
+  freq: AcarsEntity["freq"][];
 
-  // @IsOptional()
   // @IsArray({
   //   message: '"mode" field invalid',
   // })
@@ -55,9 +51,8 @@ export class ExportMessagesDto {
   //   message: '"mode" field invalid',
   //   each: true,
   // })
-  // mode: AcarsEntity["mode"][] | null;
+  // mode: AcarsEntity["mode"][];
 
-  @IsOptional()
   @IsArray({
     message: '"label" field invalid',
   })
@@ -65,9 +60,8 @@ export class ExportMessagesDto {
     message: '"label" field invalid',
     each: true,
   })
-  label: AcarsEntity["label"][] | null;
+  label: AcarsEntity["label"][];
 
-  // @IsOptional()
   // @IsArray({
   //   message: '"subLabel" field invalid',
   // })
@@ -75,9 +69,8 @@ export class ExportMessagesDto {
   //   message: '"subLabel" field invalid',
   //   each: true,
   // })
-  // subLabel: AcarsEntity["subLabel"][] | null;
+  // subLabel: AcarsEntity["subLabel"][];
 
-  @IsOptional()
   @IsArray({
     message: '"blockId" field invalid',
   })
@@ -85,9 +78,8 @@ export class ExportMessagesDto {
     message: '"blockId" field invalid',
     each: true,
   })
-  blockId: AcarsEntity["blockId"][] | null;
+  blockId: AcarsEntity["blockId"][];
 
-  @IsOptional()
   @IsArray({
     message: '"regNo" field invalid',
   })
@@ -95,9 +87,8 @@ export class ExportMessagesDto {
     message: '"regNo" field invalid',
     each: true,
   })
-  regNo: AcarsEntity["regNo"][] | null;
+  regNo: AcarsEntity["regNo"][];
 
-  @IsOptional()
   @IsArray({
     message: '"flightNo" field invalid',
   })
@@ -105,9 +96,8 @@ export class ExportMessagesDto {
     message: '"flightNo" field invalid',
     each: true,
   })
-  flightNo: AcarsEntity["flightNo"][] | null;
+  flightNo: AcarsEntity["flightNo"][];
 
-  @IsOptional()
   @IsArray({
     message: '"msgNo" field invalid',
   })
@@ -115,9 +105,8 @@ export class ExportMessagesDto {
     message: '"msgNo" field invalid',
     each: true,
   })
-  msgNo: AcarsEntity["msgNo"][] | null;
+  msgNo: AcarsEntity["msgNo"][];
 
-  // @IsOptional()
   // @IsArray({
   //   message: '"ack" field invalid',
   // })
@@ -125,9 +114,8 @@ export class ExportMessagesDto {
   //   message: '"ack" field invalid',
   //   each: true,
   // })
-  // ack: AcarsEntity["ack"][] | null;
+  // ack: AcarsEntity["ack"][];
 
-  // @IsOptional()
   // @IsArray({
   //   message: '"reassemblyStatus" field invalid',
   // })
@@ -135,9 +123,8 @@ export class ExportMessagesDto {
   //   message: '"reassemblyStatus" field invalid',
   //   each: true,
   // })
-  // reassemblyStatus: AcarsEntity["reassemblyStatus"][] | null;
+  // reassemblyStatus: AcarsEntity["reassemblyStatus"][];
 
-  @IsOptional()
   @IsArray({
     message: '"libacars" field invalid',
   })
@@ -145,7 +132,7 @@ export class ExportMessagesDto {
     message: '"libacars" field invalid',
     each: true,
   })
-  libacars: boolean[] | null;
+  libacars: boolean[];
 }
 
 export class GetMessagesDto extends ExportMessagesDto {
