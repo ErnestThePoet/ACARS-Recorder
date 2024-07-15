@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsNumber,
   IsNumberString,
@@ -7,32 +8,39 @@ import {
 } from "class-validator";
 import { AcarsEntity } from "./acars.model";
 
-class StartEndSTextDto {
-  @IsNumberString(
-    {},
+export class ExportMessagesDto {
+  @IsNumber(
+    {
+      allowInfinity: false,
+      allowNaN: false,
+    },
     {
       message: '"startS" field invalid',
     },
   )
-  startS: string;
+  startS: number;
 
-  @IsNumberString(
-    {},
+  @IsNumber(
+    {
+      allowInfinity: false,
+      allowNaN: false,
+    },
     {
       message: '"endS" field invalid',
     },
   )
-  endS: string;
+  endS: number;
 
   @IsOptional()
   @IsString({
     message: '"text" field invalid',
   })
   text: string | null;
-}
 
-export class ExportMessagesDto extends StartEndSTextDto {
   @IsOptional()
+  @IsArray({
+    message: '"freq" field invalid',
+  })
   @IsString({
     message: '"freq" field invalid',
     each: true,
@@ -40,6 +48,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   freq: AcarsEntity["freq"][] | null;
 
   // @IsOptional()
+  // @IsArray({
+  //   message: '"mode" field invalid',
+  // })
   // @IsString({
   //   message: '"mode" field invalid',
   //   each: true,
@@ -47,6 +58,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   // mode: AcarsEntity["mode"][] | null;
 
   @IsOptional()
+  @IsArray({
+    message: '"label" field invalid',
+  })
   @IsString({
     message: '"label" field invalid',
     each: true,
@@ -54,6 +68,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   label: AcarsEntity["label"][] | null;
 
   // @IsOptional()
+  // @IsArray({
+  //   message: '"subLabel" field invalid',
+  // })
   // @IsString({
   //   message: '"subLabel" field invalid',
   //   each: true,
@@ -61,6 +78,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   // subLabel: AcarsEntity["subLabel"][] | null;
 
   @IsOptional()
+  @IsArray({
+    message: '"blockId" field invalid',
+  })
   @IsString({
     message: '"blockId" field invalid',
     each: true,
@@ -68,6 +88,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   blockId: AcarsEntity["blockId"][] | null;
 
   @IsOptional()
+  @IsArray({
+    message: '"regNo" field invalid',
+  })
   @IsString({
     message: '"regNo" field invalid',
     each: true,
@@ -75,6 +98,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   regNo: AcarsEntity["regNo"][] | null;
 
   @IsOptional()
+  @IsArray({
+    message: '"flightNo" field invalid',
+  })
   @IsString({
     message: '"flightNo" field invalid',
     each: true,
@@ -82,6 +108,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   flightNo: AcarsEntity["flightNo"][] | null;
 
   @IsOptional()
+  @IsArray({
+    message: '"msgNo" field invalid',
+  })
   @IsString({
     message: '"msgNo" field invalid',
     each: true,
@@ -89,6 +118,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   msgNo: AcarsEntity["msgNo"][] | null;
 
   // @IsOptional()
+  // @IsArray({
+  //   message: '"ack" field invalid',
+  // })
   // @IsString({
   //   message: '"ack" field invalid',
   //   each: true,
@@ -96,6 +128,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   // ack: AcarsEntity["ack"][] | null;
 
   // @IsOptional()
+  // @IsArray({
+  //   message: '"reassemblyStatus" field invalid',
+  // })
   // @IsEnum(ReassemblyStatus, {
   //   message: '"reassemblyStatus" field invalid',
   //   each: true,
@@ -103,6 +138,9 @@ export class ExportMessagesDto extends StartEndSTextDto {
   // reassemblyStatus: AcarsEntity["reassemblyStatus"][] | null;
 
   @IsOptional()
+  @IsArray({
+    message: '"libacars" field invalid',
+  })
   @IsBoolean({
     message: '"libacars" field invalid',
     each: true,
@@ -136,4 +174,26 @@ export class GetMessagesDto extends ExportMessagesDto {
   pageSize: number;
 }
 
-export class GetStatisticsDto extends StartEndSTextDto {}
+export class GetStatisticsDto {
+  @IsNumberString(
+    {},
+    {
+      message: '"startS" field invalid',
+    },
+  )
+  startS: string;
+
+  @IsNumberString(
+    {},
+    {
+      message: '"endS" field invalid',
+    },
+  )
+  endS: string;
+
+  @IsOptional()
+  @IsString({
+    message: '"text" field invalid',
+  })
+  text: string | null;
+}

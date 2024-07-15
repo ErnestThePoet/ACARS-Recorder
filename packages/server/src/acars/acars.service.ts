@@ -34,11 +34,13 @@ export class AcarsService {
     private readonly acarsDatasetManager: AcarsDatasetManager,
   ) {}
 
-  private getAcarsModelWhere(dto: ExportMessagesDto): WhereOptions<Acars> {
+  private getAcarsModelExportWhere(
+    dto: ExportMessagesDto,
+  ): WhereOptions<Acars> {
     const queryWhere: WhereOptions<Acars> = {
       time: {
-        [Op.gte]: parseFloat(dto.startS),
-        [Op.lte]: parseFloat(dto.endS),
+        [Op.gte]: dto.startS,
+        [Op.lte]: dto.endS,
       },
     };
 
@@ -182,7 +184,7 @@ export class AcarsService {
     dto: GetMessagesDto,
   ): Promise<ResponseType<GetAcarsMessageElement[]>> {
     const result = await this.acarsModel.findAll({
-      where: this.getAcarsModelWhere(dto),
+      where: this.getAcarsModelExportWhere(dto),
       offset: dto.pageIndex * dto.pageSize,
       limit: dto.pageSize,
     });
@@ -220,11 +222,11 @@ export class AcarsService {
   }
 
   async exportMessages(dto: ExportMessagesDto, res: Response) {
-    const startS = parseFloat(dto.startS);
-    const endS = parseFloat(dto.endS);
+    const startS = dto.startS;
+    const endS = dto.endS;
 
     const result = await this.acarsModel.findAll({
-      where: this.getAcarsModelWhere(dto),
+      where: this.getAcarsModelExportWhere(dto),
     });
 
     const workbook = new ExcelJS.Workbook();
