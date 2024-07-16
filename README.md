@@ -4,7 +4,7 @@ If you use [acarsdec](https://github.com/TLeconte/acarsdec) to decode ACARS mess
 # Features
 - Modern architecture
 - User-friendly, responsive UI
-- ACARS messages: sort, filter, search and excel format data export
+- ACARS messages: sort, filter, search and `csv` format export
 - Supports showing libacars decoded contents
 - Supports Brief UI mode(suitable for vertical screen mobile devices)
 - Supports data feed from unlimited number of acarsdec instances
