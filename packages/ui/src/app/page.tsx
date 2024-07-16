@@ -149,7 +149,8 @@ export default function Home() {
             className={classNames(
               { [styles.divAcarsText]: text !== null },
               noto_Sans_Mono.className,
-            )}>
+            )}
+            style={{ minWidth: "340px" }}>
             {text}
           </div>
 

@@ -78,6 +78,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
     <Flex vertical gap={6}>
       <DatePicker.RangePicker
         showTime
+        placement={windowSize.vertical ? "bottomRight" : "bottomLeft"}
         value={[filter.startTime, filter.endTime]}
         onChange={range => {
           if (range && range[0] && range[1]) {
@@ -92,7 +93,11 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
       <Spin spinning={selectsLoading}>
         <Flex gap={6} vertical={windowSize.vertical} wrap>
           {FILTER_SELECTS.map(x => (
-            <Flex key={x.key} className={styles.flexControlRow} gap={6} align="center">
+            <Flex
+              key={x.key}
+              className={styles.flexControlRow}
+              gap={6}
+              align="center">
               <span className="filter-label">{x.label}:</span>
               <Select
                 className={
