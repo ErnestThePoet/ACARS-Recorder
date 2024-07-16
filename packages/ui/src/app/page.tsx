@@ -459,7 +459,7 @@ export default function Home() {
             dataSource={messages.currentPageMessages}
             onChange={(pagination, _, sorter: any) => {
               paginationState.current = {
-                pageIndex: pagination.current ?? 1 - 1,
+                pageIndex: (pagination.current ?? 1) - 1,
                 pageSize: pagination.pageSize ?? DEFAULT_PAGE_SIZE,
               };
 
