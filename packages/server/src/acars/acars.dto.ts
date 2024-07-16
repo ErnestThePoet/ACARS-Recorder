@@ -77,36 +77,20 @@ export class ExportMessagesDto {
   @IsArray({
     message: '"blockId" field invalid',
   })
-  @IsString({
-    message: '"blockId" field invalid',
-    each: true,
-  })
   blockId: AcarsEntity["blockId"][];
 
   @IsArray({
     message: '"regNo" field invalid',
-  })
-  @IsString({
-    message: '"regNo" field invalid',
-    each: true,
   })
   regNo: AcarsEntity["regNo"][];
 
   @IsArray({
     message: '"flightNo" field invalid',
   })
-  @IsString({
-    message: '"flightNo" field invalid',
-    each: true,
-  })
   flightNo: AcarsEntity["flightNo"][];
 
   @IsArray({
     message: '"msgNo" field invalid',
-  })
-  @IsString({
-    message: '"msgNo" field invalid',
-    each: true,
   })
   msgNo: AcarsEntity["msgNo"][];
 
