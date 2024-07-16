@@ -29,6 +29,12 @@ import { OrderDirection } from "@/modules/order-direction";
 const todayTimeRange = getTodayTimeRange();
 
 const DEFAULT_PAGE_SIZE = 30;
+const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100, 200];
+
+interface PaginationState {
+  currentPage: number;
+  pageSize: number;
+}
 
 export default function Home() {
   const [messages, setMessages] = useState<{
@@ -42,11 +48,13 @@ export default function Home() {
   const [queryLoading, setQueryLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
 
-  const paginationState = useRef<{
-    pageIndex: number;
-    pageSize: number;
-  }>({
-    pageIndex: 0,
+  const [paginationState, setPaginationState] = useState<PaginationState>({
+    currentPage: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
+
+  const paginationStateRef = useRef<PaginationState>({
+    currentPage: 1,
     pageSize: DEFAULT_PAGE_SIZE,
   });
 
@@ -262,8 +270,8 @@ export default function Home() {
         flightNo: queryFilter.current.flightNo,
         msgNo: queryFilter.current.msgNo,
         libacars: queryFilter.current.libacars,
-        pageIndex: paginationState.current.pageIndex,
-        pageSize: paginationState.current.pageSize,
+        pageIndex: paginationStateRef.current.currentPage - 1,
+        pageSize: paginationStateRef.current.pageSize,
         orderBy: orderState.current.orderBy,
         orderDirection: orderState.current.orderDirection,
       }),
@@ -371,10 +379,22 @@ export default function Home() {
             bordered
             dataSource={messages.currentPageMessages}
             pagination={{
-              defaultPageSize: 30,
-              pageSizeOptions: [10, 20, 30, 50, 100, 200],
+              current: paginationState.currentPage,
+              pageSize: paginationState.pageSize,
+              total: messages.totalCount,
+              pageSizeOptions: PAGE_SIZE_OPTIONS,
               showSizeChanger: true,
               showQuickJumper: true,
+              onChange: (currentPage, pageSize) => {
+                paginationStateRef.current = {
+                  currentPage,
+                  pageSize,
+                };
+
+                setPaginationState(paginationStateRef.current);
+
+                syncMessages();
+              },
             }}
             renderItem={item => (
               <List.Item className={noto_Sans_Mono.className}>
@@ -458,10 +478,12 @@ export default function Home() {
             columns={columns}
             dataSource={messages.currentPageMessages}
             onChange={(pagination, _, sorter: any) => {
-              paginationState.current = {
-                pageIndex: (pagination.current ?? 1) - 1,
+              paginationStateRef.current = {
+                currentPage: pagination.current ?? 1,
                 pageSize: pagination.pageSize ?? DEFAULT_PAGE_SIZE,
               };
+
+              setPaginationState(paginationStateRef.current);
 
               orderState.current = {
                 orderBy: sorter.order ? sorter.field : null,
@@ -475,9 +497,10 @@ export default function Home() {
               syncMessages();
             }}
             pagination={{
-              defaultPageSize: DEFAULT_PAGE_SIZE,
+              current: paginationState.currentPage,
+              pageSize: paginationState.pageSize,
               total: messages.totalCount,
-              pageSizeOptions: [10, 20, 30, 50, 100, 200],
+              pageSizeOptions: PAGE_SIZE_OPTIONS,
               showSizeChanger: true,
               showQuickJumper: true,
             }}
