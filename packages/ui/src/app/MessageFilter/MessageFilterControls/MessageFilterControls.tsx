@@ -5,6 +5,7 @@ import {
 } from "@/modules/interface/acars.interface";
 import { DatePicker, Flex, Input, Select, Spin } from "antd";
 import styles from "./MessageFilterControls.module.scss";
+import { useWindowSize } from "@/modules/hooks/use-window-size";
 
 interface MessageFilterControlsProps {
   selectsLoading: boolean;
@@ -71,6 +72,8 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
   filter,
   onChange,
 }) => {
+  const windowSize = useWindowSize();
+
   return (
     <Flex vertical gap={6}>
       <DatePicker.RangePicker
@@ -87,11 +90,14 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
       />
 
       <Spin spinning={selectsLoading}>
-        <Flex gap={6} wrap>
+        <Flex gap={6} vertical={windowSize.vertical} wrap>
           {FILTER_SELECTS.map(x => (
             <Flex className={styles.flexControlRow} key={x.key} align="center">
               <span className="filter-label">{x.label}:</span>
               <Select
+                className={
+                  windowSize.vertical ? "filter-select-v" : "filter-select-h"
+                }
                 mode="multiple"
                 allowClear
                 options={statistics[x.key].map(item => ({

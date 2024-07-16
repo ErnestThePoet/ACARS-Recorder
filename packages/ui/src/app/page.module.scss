@@ -9,12 +9,6 @@
   padding: 20px;
 
   flex: 1;
-
-  overflow: hidden;
-}
-
-.inSearch {
-  width: 200px;
 }
 
 .btnExport {
@@ -24,7 +18,9 @@
 .tableListAcars {
   flex: 1;
 
-  overflow-x: auto;
+  div[class~="flex-misc"] {
+    text-align: start;
+  }
 }
 
 .withTooltip {

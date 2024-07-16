@@ -37,6 +37,7 @@ import { getApiUrl, handleRequest, POST } from "@/modules/api/api";
 import { OrderDirection } from "@/modules/order-direction";
 import type { ResizeCallbackData } from "react-resizable";
 import { Resizable } from "react-resizable";
+import { useWindowSize } from "@/modules/hooks/use-window-size";
 
 const todayTimeRange = getTodayTimeRange();
 
@@ -83,6 +84,8 @@ const ResizableTitle = (
 };
 
 export default function Home() {
+  const windowSize = useWindowSize();
+
   const [messages, setMessages] = useState<{
     totalCount: number;
     currentPageMessages: AcarsMessage[];
@@ -223,9 +226,7 @@ export default function Home() {
       sorter: true,
       width: 90,
       render: (flightNo, record) => (
-        <Flex
-          vertical
-          align="center">
+        <Flex vertical align="center">
           {flightNo && (
             <Tooltip title={record.airlineDescription}>
               <div
@@ -257,10 +258,7 @@ export default function Home() {
       sorter: true,
       width: 90,
       render: (blockId, record) => (
-        <Flex
-          vertical
-          align="center"
-          gap={6}>
+        <Flex vertical align="center" gap={6}>
           {blockId && <Tag color="purple">{blockId}</Tag>}
           {record.msgNo && <Tag color="cyan">{record.msgNo}</Tag>}
         </Flex>
@@ -272,9 +270,7 @@ export default function Home() {
       align: "center",
       width: 110,
       render: (_, record) => (
-        <Flex
-          vertical
-          align="flex-start">
+        <Flex className="flex-misc" vertical align="flex-start">
           <span>Error: {record.error}</span>
           <span>Mode: {record.mode}</span>
           <span>ACK: {record.ack ?? "NACK"}</span>
@@ -354,7 +350,7 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(syncMessages, []);
 
-  useEffect(() => setBrief(window.innerWidth < window.innerHeight), []);
+  useEffect(() => setBrief(windowSize.vertical), [windowSize.vertical]);
 
   return (
     <main className={styles.main}>
@@ -369,60 +365,67 @@ export default function Home() {
             }}
           />
 
-          <Tag color={messages.totalCount ? "green" : "default"}>
-            {messages.totalCount
-              ? messages.totalCount > 1
-                ? `${messages.totalCount} Messages`
-                : `${messages.totalCount} Message`
-              : "No Message"}
-          </Tag>
+          <Flex gap={20} align="center" flex="1">
+            <Tag color={messages.totalCount ? "green" : "default"}>
+              {messages.totalCount
+                ? messages.totalCount > 1
+                  ? `${messages.totalCount} Messages`
+                  : `${messages.totalCount} Message`
+                : "No Message"}
+            </Tag>
 
-          <Checkbox checked={brief} onChange={e => setBrief(e.target.checked)}>
-            Brief
-          </Checkbox>
+            <Checkbox
+              checked={brief}
+              onChange={e => setBrief(e.target.checked)}>
+              Brief
+            </Checkbox>
 
-          <Button
-            className={styles.btnExport}
-            disabled={messages.totalCount === 0}
-            loading={exportLoading}
-            onClick={async () => {
-              setExportLoading(true);
+            <Button
+              className={styles.btnExport}
+              disabled={messages.totalCount === 0}
+              loading={exportLoading}
+              onClick={async () => {
+                setExportLoading(true);
 
-              const response = await fetch(getApiUrl("ACARS_EXPORT_MESSAGES"), {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  startS: queryFilter.current.startTime.unix(),
-                  endS: queryFilter.current.endTime.unix(),
-                  text: queryFilter.current.text,
-                  freq: queryFilter.current.freq,
-                  label: queryFilter.current.label,
-                  blockId: queryFilter.current.blockId,
-                  regNo: queryFilter.current.regNo,
-                  flightNo: queryFilter.current.flightNo,
-                  msgNo: queryFilter.current.msgNo,
-                  libacars: queryFilter.current.libacars,
-                }),
-              });
+                const response = await fetch(
+                  getApiUrl("ACARS_EXPORT_MESSAGES"),
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      startS: queryFilter.current.startTime.unix(),
+                      endS: queryFilter.current.endTime.unix(),
+                      text: queryFilter.current.text,
+                      freq: queryFilter.current.freq,
+                      label: queryFilter.current.label,
+                      blockId: queryFilter.current.blockId,
+                      regNo: queryFilter.current.regNo,
+                      flightNo: queryFilter.current.flightNo,
+                      msgNo: queryFilter.current.msgNo,
+                      libacars: queryFilter.current.libacars,
+                    }),
+                  },
+                );
 
-              const blob = await response.blob();
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download =
-                response.headers
-                  .get("Content-Disposition")
-                  ?.split("filename=")[1] ?? "export.xlsx";
-              a.click();
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download =
+                  response.headers
+                    .get("Content-Disposition")
+                    ?.split("filename=")[1] ?? "export.xlsx";
+                a.click();
 
-              setExportLoading(false);
-            }}
-            type="primary"
-            icon={<ExportOutlined />}>
-            Export
-          </Button>
+                setExportLoading(false);
+              }}
+              type="primary"
+              icon={<ExportOutlined />}>
+              Export
+            </Button>
+          </Flex>
         </Flex>
 
         {brief ? (

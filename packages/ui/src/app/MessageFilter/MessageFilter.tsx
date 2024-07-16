@@ -22,7 +22,6 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
   queryLoading,
   onFilter,
 }) => {
-  const [showQuery, setShowQuery] = useState(false);
   const [controlSelectsLoading, setControlSelectsLoading] = useState(false);
 
   const [filter, setFilter] = useState<AcarsMessageFilterType>({
@@ -70,8 +69,6 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
       className={styles.collapseMessageFilter}
       size="small"
       onChange={e => {
-        setShowQuery(e.length > 0);
-
         if (e.length > 0) {
           updateStatistics(filter.startTime, filter.endTime);
         }
@@ -79,7 +76,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
       items={[
         {
           key: 0,
-          label: "ACARS Message Filters",
+          label: "Message Filters",
           children: (
             <MessageFilterControls
               selectsLoading={controlSelectsLoading}
@@ -100,7 +97,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
               }}
             />
           ),
-          extra: showQuery && (
+          extra: (
             <Flex gap={5}>
               <Button
                 onClick={e => {
@@ -123,6 +120,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
               </Button>
 
               <Button
+                className={styles.btnQuery}
                 onClick={e => {
                   e.stopPropagation();
                   onFilter(filter);

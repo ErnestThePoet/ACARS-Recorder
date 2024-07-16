@@ -1,3 +1,12 @@
 .collapseMessageFilter {
-  max-width: 1100px;
+  flex: 1;
+  max-width: 1200px;
+
+  div[class~="ant-collapse-header"] {
+    align-items: center !important;
+  }
+}
+
+.btnQuery {
+  width: 150px;
 }
