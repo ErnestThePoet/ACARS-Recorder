@@ -1,10 +1,17 @@
-.collapseMessageFilter {
-  flex: 1;
-  max-width: 1200px;
-
+.collapseMessageFilterBase {
   div[class~="ant-collapse-header"] {
     align-items: center !important;
   }
+}
+
+.collapseMessageFilterH {
+  @extend .collapseMessageFilterBase;
+  width: calc(100% - 340px);
+}
+
+.collapseMessageFilterV {
+  @extend .collapseMessageFilterBase;
+  width: 100%;
 }
 
 .btnQuery {

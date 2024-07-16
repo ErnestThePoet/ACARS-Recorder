@@ -92,7 +92,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
       <Spin spinning={selectsLoading}>
         <Flex gap={6} vertical={windowSize.vertical} wrap>
           {FILTER_SELECTS.map(x => (
-            <Flex className={styles.flexControlRow} key={x.key} align="center">
+            <Flex key={x.key} className={styles.flexControlRow} gap={6} align="center">
               <span className="filter-label">{x.label}:</span>
               <Select
                 className={

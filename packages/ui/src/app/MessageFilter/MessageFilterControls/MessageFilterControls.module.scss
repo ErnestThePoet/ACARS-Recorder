@@ -1,11 +1,11 @@
 .flexControlRow {
   span[class="filter-label"] {
-    min-width: 65px;
+    min-width: 58px;
+    text-align: end;
   }
 
   div[class~="filter-select-h"] {
-    min-width: 220px;
-    max-width: 400px;
+    width: 210px;
   }
 
   div[class~="filter-select-v"] {

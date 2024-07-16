@@ -44,6 +44,8 @@ const todayTimeRange = getTodayTimeRange();
 const DEFAULT_PAGE_SIZE = 30;
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100, 200];
 
+const MESSAGE_REFETCH_INTERVAL_S = 5;
+
 interface PaginationState {
   currentPage: number;
   pageSize: number;
@@ -342,7 +344,10 @@ export default function Home() {
   }, [brief]);
 
   useEffect(() => {
-    const refetchIntervalId = setInterval(syncMessages, 10 * MS_PER_SEC);
+    const refetchIntervalId = setInterval(
+      syncMessages,
+      MESSAGE_REFETCH_INTERVAL_S * MS_PER_SEC,
+    );
 
     return () => clearInterval(refetchIntervalId);
   }, [syncMessages]);

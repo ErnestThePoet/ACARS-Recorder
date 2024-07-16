@@ -5,11 +5,16 @@ import {
   StatisticsType,
 } from "@/modules/interface/acars.interface";
 import { Button, Collapse, Flex } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  SyncOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import MessageFilterControls from "./MessageFilterControls/MessageFilterControls";
 import { getTodayTimeRange } from "@/modules/utils/date-time.util";
 import { handleRequest, GET } from "@/modules/api/api";
 import { Dayjs } from "dayjs";
+import { useWindowSize } from "@/modules/hooks/use-window-size";
 
 interface MessageFilterProps {
   queryLoading: boolean;
@@ -22,7 +27,11 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
   queryLoading,
   onFilter,
 }) => {
-  const [controlSelectsLoading, setControlSelectsLoading] = useState(false);
+  const windowSize = useWindowSize();
+
+  const [showFilterControlButtons, setShowFilterControlButtons] =
+    useState(false);
+  const [statisticsLoading, setStatisticsLoading] = useState(false);
 
   const [filter, setFilter] = useState<AcarsMessageFilterType>({
     startTime: todayTimeRange[0],
@@ -48,7 +57,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
   });
 
   const updateStatistics = useCallback((startTime: Dayjs, endTime: Dayjs) => {
-    setControlSelectsLoading(true);
+    setStatisticsLoading(true);
 
     handleRequest(
       GET("ACARS_GET_STATISTICS", {
@@ -59,16 +68,22 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
         onSuccess: data => {
           setStatistics(data.filters);
         },
-        onFinish: () => setControlSelectsLoading(false),
+        onFinish: () => setStatisticsLoading(false),
       },
     );
   }, []);
 
   return (
     <Collapse
-      className={styles.collapseMessageFilter}
+      className={
+        windowSize.vertical
+          ? styles.collapseMessageFilterV
+          : styles.collapseMessageFilterH
+      }
       size="small"
       onChange={e => {
+        setShowFilterControlButtons(e.length > 0);
+
         if (e.length > 0) {
           updateStatistics(filter.startTime, filter.endTime);
         }
@@ -79,7 +94,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
           label: "Message Filters",
           children: (
             <MessageFilterControls
-              selectsLoading={controlSelectsLoading}
+              selectsLoading={statisticsLoading}
               statistics={statistics}
               filter={filter}
               onChange={e => {
@@ -99,25 +114,40 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
           ),
           extra: (
             <Flex gap={5}>
-              <Button
-                onClick={e => {
-                  e.stopPropagation();
+              {showFilterControlButtons && (
+                <Button
+                  onClick={e => {
+                    e.stopPropagation();
 
-                  setFilter(value => ({
-                    ...value,
-                    freq: [],
-                    label: [],
-                    blockId: [],
-                    regNo: [],
-                    flightNo: [],
-                    msgNo: [],
-                    libacars: [],
-                    text: "",
-                  }));
-                }}
-                type="link">
-                Clear
-              </Button>
+                    setFilter(value => ({
+                      ...value,
+                      freq: [],
+                      label: [],
+                      blockId: [],
+                      regNo: [],
+                      flightNo: [],
+                      msgNo: [],
+                      libacars: [],
+                      text: "",
+                    }));
+                  }}
+                  type="link"
+                  icon={<DeleteOutlined />}
+                />
+              )}
+
+              {showFilterControlButtons && (
+                <Button
+                  loading={statisticsLoading}
+                  onClick={e => {
+                    e.stopPropagation();
+
+                    updateStatistics(filter.startTime, filter.endTime);
+                  }}
+                  type="link"
+                  icon={<SyncOutlined />}
+                />
+              )}
 
               <Button
                 className={styles.btnQuery}
