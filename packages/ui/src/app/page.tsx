@@ -11,11 +11,11 @@ import {
   Tag,
   Tooltip,
 } from "antd";
-import type { TableProps } from "antd";
+import type { TableColumnsType } from "antd";
 import { ExportOutlined } from "@ant-design/icons";
 import styles from "./page.module.scss";
 import Nav from "./Nav/Nav";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   MS_PER_SEC,
   formatSTimeyMdHms,
@@ -35,6 +35,8 @@ import {
 import MessageFilter from "./MessageFilter/MessageFilter";
 import { getApiUrl, handleRequest, POST } from "@/modules/api/api";
 import { OrderDirection } from "@/modules/order-direction";
+import type { ResizeCallbackData } from "react-resizable";
+import { Resizable } from "react-resizable";
 
 const todayTimeRange = getTodayTimeRange();
 
@@ -45,6 +47,40 @@ interface PaginationState {
   currentPage: number;
   pageSize: number;
 }
+
+const ResizableTitle = (
+  props: React.HTMLAttributes<any> & {
+    onResize: (
+      e: React.SyntheticEvent<Element>,
+      data: ResizeCallbackData,
+    ) => void;
+    width: number;
+  },
+) => {
+  const { onResize, width, ...restProps } = props;
+
+  if (!width) {
+    return <th {...restProps} />;
+  }
+
+  return (
+    <Resizable
+      width={width}
+      height={0}
+      handle={
+        <span
+          className="react-resizable-handle"
+          onClick={e => {
+            e.stopPropagation();
+          }}
+        />
+      }
+      onResize={onResize}
+      draggableOpts={{ enableUserSelectHack: false }}>
+      <th {...restProps} />
+    </Resizable>
+  );
+};
 
 export default function Home() {
   const [messages, setMessages] = useState<{
@@ -94,175 +130,181 @@ export default function Home() {
     text: "",
   });
 
-  const columns = useMemo<TableProps<AcarsMessage>["columns"]>(
-    () => [
-      {
-        title: "Text",
-        dataIndex: "text",
-        key: "text",
-        align: "center",
-        sorter: true,
-        render: (text, record) => (
-          <Flex
-            vertical
-            align="flex-start"
-            style={{
-              minWidth: "380px",
-            }}>
-            <div
-              className={classNames(
-                { [styles.divAcarsText]: text !== null },
-                noto_Sans_Mono.className,
-              )}>
-              {text}
-            </div>
+  const [columns, setColumns] = useState<TableColumnsType<AcarsMessage>>([
+    {
+      title: "Text",
+      dataIndex: "text",
+      key: "text",
+      align: "center",
+      sorter: true,
+      width: 380,
+      render: (text, record) => (
+        <Flex vertical align="flex-start">
+          <div
+            className={classNames(
+              { [styles.divAcarsText]: text !== null },
+              noto_Sans_Mono.className,
+            )}>
+            {text}
+          </div>
 
-            {record.libacars && (
-              <Button
-                type="link"
-                onClick={() => {
-                  setLibacars(record.libacars!);
-                  setLibacarsModalOpen(true);
-                }}>
-                libacars
-              </Button>
-            )}
-          </Flex>
-        ),
-      },
-      {
-        title: "Time",
-        dataIndex: "time",
-        key: "time",
-        align: "center",
-        sorter: true,
-        render: time => (
-          <Flex
-            vertical
-            style={{
-              width: "180px",
-            }}>
-            <span>{`${formatSTimeyMdHms(time)} UTC`}</span>
-            <span>{`${formatSTimeyMdHms(
-              time,
-              LOCAL_TIMEZONE_OFFSET,
-            )} ${LOCAL_TIMEZONE_NAME}`}</span>
-          </Flex>
-        ),
-      },
-      {
-        title: "Freq/L",
-        dataIndex: "freq",
-        key: "freq",
-        align: "center",
-        sorter: true,
-        render: (freq, record) => (
-          <Flex vertical>
-            <span>{freq}MHz</span>
-            <span>{record.level.toFixed(1)}dBm</span>
-          </Flex>
-        ),
-      },
-      {
-        title: "Label/Sub Label",
-        dataIndex: "label",
-        key: "label",
-        align: "center",
-        sorter: true,
-        render: (label, record) => (
-          <Flex vertical align="center" gap={6}>
-            <Tooltip title={record.labelDescription}>
-              <Tag
+          {record.libacars && (
+            <Button
+              type="link"
+              onClick={() => {
+                setLibacars(record.libacars!);
+                setLibacarsModalOpen(true);
+              }}>
+              libacars
+            </Button>
+          )}
+        </Flex>
+      ),
+    },
+    {
+      title: "Time",
+      dataIndex: "time",
+      key: "time",
+      align: "center",
+      sorter: true,
+      width: 150,
+      render: time => (
+        <Flex vertical>
+          <span>{`${formatSTimeyMdHms(time)} UTC`}</span>
+          <span>{`${formatSTimeyMdHms(
+            time,
+            LOCAL_TIMEZONE_OFFSET,
+          )} ${LOCAL_TIMEZONE_NAME}`}</span>
+        </Flex>
+      ),
+    },
+    {
+      title: "Freq/L",
+      dataIndex: "freq",
+      key: "freq",
+      align: "center",
+      sorter: true,
+      width: 100,
+      render: (freq, record) => (
+        <Flex vertical>
+          <span>{freq}MHz</span>
+          <span>{record.level.toFixed(1)}dBm</span>
+        </Flex>
+      ),
+    },
+    {
+      title: "Label/Sub Label",
+      dataIndex: "label",
+      key: "label",
+      align: "center",
+      sorter: true,
+      width: 100,
+      render: (label, record) => (
+        <Flex vertical align="center" gap={6}>
+          <Tooltip title={record.labelDescription}>
+            <Tag
+              className={classNames({
+                [styles.withTooltip]: record.labelDescription !== null,
+              })}
+              color="blue">
+              {label}
+            </Tag>
+          </Tooltip>
+
+          {record.subLabel && <Tag>{record.subLabel}</Tag>}
+        </Flex>
+      ),
+    },
+    {
+      title: "Flight/AC Reg",
+      dataIndex: "flightNo",
+      key: "flightNo",
+      align: "center",
+      sorter: true,
+      width: 90,
+      render: (flightNo, record) => (
+        <Flex
+          vertical
+          align="center">
+          {flightNo && (
+            <Tooltip title={record.airlineDescription}>
+              <div
                 className={classNames({
-                  [styles.withTooltip]: record.labelDescription !== null,
-                })}
-                color="blue">
-                {label}
-              </Tag>
+                  [styles.withTooltip]: record.airlineDescription !== null,
+                })}>
+                {flightNo}
+              </div>
             </Tooltip>
+          )}
+          {record.regNo && (
+            <Tooltip title={record.aircraftDescription}>
+              <div
+                className={classNames({
+                  [styles.withTooltip]: record.aircraftDescription !== null,
+                })}>
+                {record.regNo}
+              </div>
+            </Tooltip>
+          )}
+        </Flex>
+      ),
+    },
+    {
+      title: "Blk ID/Msg No",
+      dataIndex: "blockId",
+      key: "blockId",
+      align: "center",
+      sorter: true,
+      width: 90,
+      render: (blockId, record) => (
+        <Flex
+          vertical
+          align="center"
+          gap={6}>
+          {blockId && <Tag color="purple">{blockId}</Tag>}
+          {record.msgNo && <Tag color="cyan">{record.msgNo}</Tag>}
+        </Flex>
+      ),
+    },
+    {
+      title: "Misc",
+      key: "misc",
+      align: "center",
+      width: 110,
+      render: (_, record) => (
+        <Flex
+          vertical
+          align="flex-start">
+          <span>Error: {record.error}</span>
+          <span>Mode: {record.mode}</span>
+          <span>ACK: {record.ack ?? "NACK"}</span>
+          <span>
+            Reasm: {getReassemblyStatusString(record.reassemblyStatus)}
+          </span>
+        </Flex>
+      ),
+    },
+  ]);
 
-            {record.subLabel && <Tag>{record.subLabel}</Tag>}
-          </Flex>
-        ),
-      },
-      {
-        title: "Flight/AC Reg",
-        dataIndex: "flightNo",
-        key: "flightNo",
-        align: "center",
-        sorter: true,
-        render: (flightNo, record) => (
-          <Flex
-            vertical
-            align="center"
-            style={{
-              width: "90px",
-            }}>
-            {flightNo && (
-              <Tooltip title={record.airlineDescription}>
-                <div
-                  className={classNames({
-                    [styles.withTooltip]: record.airlineDescription !== null,
-                  })}>
-                  {flightNo}
-                </div>
-              </Tooltip>
-            )}
-            {record.regNo && (
-              <Tooltip title={record.aircraftDescription}>
-                <div
-                  className={classNames({
-                    [styles.withTooltip]: record.aircraftDescription !== null,
-                  })}>
-                  {record.regNo}
-                </div>
-              </Tooltip>
-            )}
-          </Flex>
-        ),
-      },
-      {
-        title: "Blk ID/Msg No",
-        dataIndex: "blockId",
-        key: "blockId",
-        align: "center",
-        sorter: true,
-        render: (blockId, record) => (
-          <Flex
-            vertical
-            align="center"
-            gap={6}
-            style={{
-              width: "90px",
-            }}>
-            {blockId && <Tag color="purple">{blockId}</Tag>}
-            {record.msgNo && <Tag color="cyan">{record.msgNo}</Tag>}
-          </Flex>
-        ),
-      },
-      {
-        title: "Misc",
-        key: "misc",
-        align: "center",
-        render: (_, record) => (
-          <Flex
-            vertical
-            align="flex-start"
-            style={{
-              width: "110px",
-              wordBreak: "break-all",
-            }}>
-            <span>Error: {record.error}</span>
-            <span>Mode: {record.mode}</span>
-            <span>ACK: {record.ack ?? "NACK"}</span>
-            <span>
-              Reasm: {getReassemblyStatusString(record.reassemblyStatus)}
-            </span>
-          </Flex>
-        ),
-      },
-    ],
-    [],
+  const handleResize =
+    (index: number) =>
+    (_: React.SyntheticEvent<Element>, { size }: ResizeCallbackData) => {
+      const newColumns = [...columns!];
+      newColumns[index] = {
+        ...newColumns[index],
+        width: size.width,
+      };
+      setColumns(newColumns);
+    };
+
+  const mergedColumns = columns!.map<TableColumnsType<AcarsMessage>[number]>(
+    (col, index) => ({
+      ...col,
+      onHeaderCell: (column: TableColumnsType<AcarsMessage>[number]) => ({
+        width: column.width,
+        onResize: handleResize(index) as React.ReactEventHandler<any>,
+      }),
+    }),
   );
 
   const syncMessages = useCallback(() => {
@@ -485,7 +527,12 @@ export default function Home() {
           <Table
             className={styles.tableListAcars}
             rowKey="id"
-            columns={columns}
+            columns={mergedColumns}
+            components={{
+              header: {
+                cell: ResizableTitle,
+              },
+            }}
             dataSource={messages.currentPageMessages}
             onChange={(pagination, _, sorter: any) => {
               paginationStateRef.current = {
