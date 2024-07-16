@@ -15,7 +15,6 @@ import {
 import { successRes } from "src/common/response";
 import { Op, WhereOptions } from "sequelize";
 import { Response } from "express";
-import * as ExcelJS from "exceljs";
 import {
   formatSTimeyMd,
   formatSTimeyMdHms,
@@ -231,68 +230,85 @@ export class AcarsService {
     });
   }
 
+  // Ugly but hopefully ensures max performance
+  private getCsvRow(acars: Acars): string {
+    return (
+      (acars.text ? `"${acars.text}"` : "") +
+      `,${formatSTimeyMdHms(acars.time)}` +
+      `,${formatSTimeyMdHms(acars.time, LOCAL_TIMEZONE_OFFSET)}` +
+      `,${acars.freq}` +
+      `,${acars.level}` +
+      `,${acars.error}` +
+      `,"${acars.mode}"` +
+      `,"${acars.label}"` +
+      (acars.subLabel ? `,"${acars.subLabel}"` : ",") +
+      (acars.blockId ? `,"${acars.blockId}"` : ",") +
+      (acars.ack ? `,"${acars.ack}"` : ",NACK") +
+      (acars.regNo ? `,"${acars.regNo}"` : ",") +
+      (acars.flightNo ? `,"${acars.flightNo}"` : ",") +
+      (acars.msgNo ? `,"${acars.msgNo}"` : ",") +
+      `,${getReassemblyStatusString(acars.reassemblyStatus)}` +
+      (acars.libacars ? `,"${acars.libacars}"` : ",") +
+      "\n"
+    );
+  }
+
   async exportMessages(dto: ExportMessagesDto, res: Response) {
     const startS = dto.startS;
     const endS = dto.endS;
 
-    const result = await this.acarsModel.findAll({
-      where: this.getAcarsModelExportWhere(dto),
+    const queryWhere = this.getAcarsModelExportWhere(dto);
+
+    const totalCount = await this.acarsModel.count({
+      where: queryWhere,
     });
 
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("ACARS");
+    const FIND_BLOCK_SIZE = 10000;
 
-    sheet.addRow([
-      "Text",
-      "UTC",
-      LOCAL_TIMEZONE_NAME,
-      "Frequency",
-      "Level",
-      "Error",
-      "Mode",
-      "Label",
-      "Sublabel",
-      "Block ID",
-      "Ack",
-      "Reg No",
-      "Flight No",
-      "Message No",
-      "Reassembly",
-      "libacars",
-    ]);
+    const findIterationCount =
+      Math.floor((totalCount - 1) / FIND_BLOCK_SIZE) + 1;
 
-    sheet.addRows(
-      result.map(x => [
-        x.text ?? "",
-        formatSTimeyMdHms(x.time),
-        formatSTimeyMdHms(x.time, LOCAL_TIMEZONE_OFFSET),
-        x.freq,
-        x.level,
-        x.error,
-        x.mode,
-        x.label,
-        x.subLabel ?? "",
-        x.blockId ?? "",
-        x.ack ?? "NACK",
-        x.regNo ?? "",
-        x.flightNo ?? "",
-        x.msgNo ?? "",
-        getReassemblyStatusString(x.reassemblyStatus),
-        x.libacars ?? "",
-      ]),
-    );
-
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
+    res.setHeader("Content-Type", "text/csv");
     res.setHeader(
       "Content-Disposition",
       "attachment; filename=" +
-        `ACARS-${formatSTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatSTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.xlsx`,
+        `ACARS-${formatSTimeyMd(startS, LOCAL_TIMEZONE_OFFSET)}-${formatSTimeyMd(endS, LOCAL_TIMEZONE_OFFSET)}.csv`,
     );
 
-    await workbook.xlsx.write(res);
+    res.write(
+      [
+        "Text",
+        "UTC",
+        LOCAL_TIMEZONE_NAME,
+        "Frequency",
+        "Level",
+        "Error",
+        "Mode",
+        "Label",
+        "Sublabel",
+        "Block ID",
+        "Ack",
+        "Reg No",
+        "Flight No",
+        "Message No",
+        "Reassembly",
+        "libacars",
+      ].join(",") + "\n",
+    );
+
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < findIterationCount; i++) {
+      const currentMessages = await this.acarsModel.findAll({
+        where: queryWhere,
+        limit: FIND_BLOCK_SIZE,
+        offset: FIND_BLOCK_SIZE * i,
+      });
+
+      for (const message of currentMessages) {
+        res.write(this.getCsvRow(message));
+      }
+    }
+    /* eslint-enable no-await-in-loop */
 
     res.end();
   }
