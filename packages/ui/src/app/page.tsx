@@ -1,6 +1,16 @@
 "use client";
 
-import { Button, Checkbox, Flex, List, Modal, Table, Tag, Tooltip } from "antd";
+import {
+  Button,
+  Checkbox,
+  Flex,
+  FloatButton,
+  List,
+  Modal,
+  Table,
+  Tag,
+  Tooltip,
+} from "antd";
 import type { TableProps } from "antd";
 import { ExportOutlined } from "@ant-design/icons";
 import styles from "./page.module.scss";
@@ -507,6 +517,8 @@ export default function Home() {
           />
         )}
       </Flex>
+
+      <FloatButton.BackTop visibilityHeight={0} />
 
       <Modal
         open={libacarsModalOpen}
