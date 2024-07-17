@@ -36,19 +36,3 @@ export interface AcarsMessageFilterType {
   libacars: boolean[];
   text: string;
 }
-
-interface ValueCount<T> {
-  value: T;
-  count: number;
-}
-
-export interface StatisticsType {
-  freq: ValueCount<AcarsMessage["freq"]>[];
-  label: ValueCount<AcarsMessage["label"]>[];
-  blockId: ValueCount<AcarsMessage["blockId"]>[];
-  regNo: ValueCount<AcarsMessage["regNo"]>[];
-  flightNo: ValueCount<AcarsMessage["flightNo"]>[];
-  msgNo: ValueCount<AcarsMessage["msgNo"]>[];
-  reassemblyStatus: ValueCount<AcarsMessage["reassemblyStatus"]>[];
-  libacars: ValueCount<boolean>[];
-}

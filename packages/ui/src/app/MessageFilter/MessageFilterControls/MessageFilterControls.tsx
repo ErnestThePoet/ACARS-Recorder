@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  AcarsMessageFilterType,
-  StatisticsType,
-} from "@/modules/interface/acars.interface";
+import { AcarsMessageFilterType } from "@/modules/interface/acars.interface";
 import { DatePicker, Flex, Input, Select, Spin } from "antd";
 import styles from "./MessageFilterControls.module.scss";
 import { useWindowSize } from "@/modules/hooks/use-window-size";
@@ -10,16 +7,17 @@ import {
   getReassemblyStatusString,
   ReassemblyStatus,
 } from "@/modules/reassembly";
+import { GetStatisticsFilters } from "@/modules/api/api.interface";
 
 interface MessageFilterControlsProps {
   selectsLoading: boolean;
-  statistics: StatisticsType;
+  statisticsFilters: GetStatisticsFilters;
   filter: AcarsMessageFilterType;
   onChange: (filterPatch: Partial<AcarsMessageFilterType>) => void;
 }
 
 interface FilterSelectType {
-  key: keyof StatisticsType;
+  key: keyof GetStatisticsFilters;
   label: string;
   nullLabel?: React.ReactNode;
   renderValue?: (value: string | number | boolean | null) => React.ReactNode;
@@ -77,7 +75,7 @@ function renderFilterOptionLabel(
 
 const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
   selectsLoading,
-  statistics,
+  statisticsFilters,
   filter,
   onChange,
 }) => {
@@ -114,7 +112,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
                 }
                 mode="multiple"
                 allowClear
-                options={statistics[x.key].map(item => ({
+                options={statisticsFilters[x.key].map(item => ({
                   label: renderFilterOptionLabel(x, item.value),
                   value: item.value,
                 }))}
@@ -123,10 +121,10 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
                     <span>
                       {renderFilterOptionLabel(
                         x,
-                        statistics[x.key][index].value,
+                        statisticsFilters[x.key][index].value,
                       )}
                     </span>
-                    <span>({statistics[x.key][index].count})</span>
+                    <span>({statisticsFilters[x.key][index].count})</span>
                   </Flex>
                 )}
                 value={filter[x.key]}

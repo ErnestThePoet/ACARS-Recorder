@@ -2,42 +2,39 @@ import type { AxiosError, AxiosResponse } from "axios";
 import { message } from "antd";
 import apiObject from "./api.json";
 import axios from "axios";
+import { ResponseType } from "./api.interface";
 
 export const getApiUrl = (api: keyof typeof apiObject) => {
-  return "/api" + apiObject[api];
+  return "/api" + apiObject[api][1];
 };
 
 // Axios wrappers
-export function GET(
+
+type RequestFn = (
   api: keyof typeof apiObject,
   params: any,
-): Promise<AxiosResponse<any>> {
-  return axios.get(getApiUrl(api), {
-    params,
-  });
-}
+) => Promise<AxiosResponse<any>>;
 
-export function DELETE(
-  api: keyof typeof apiObject,
-  params: any,
-): Promise<AxiosResponse<any>> {
-  return axios.delete(getApiUrl(api), {
-    params,
-  });
-}
+type RequestMethod = "GET" | "PUT" | "POST" | "DELETE";
 
-export function PUT(
-  api: keyof typeof apiObject,
-  data: any,
-): Promise<AxiosResponse<any>> {
-  return axios.put(getApiUrl(api), data);
-}
+const REQUESTS: Record<RequestMethod, RequestFn> = {
+  GET: (api, params) =>
+    axios.get(getApiUrl(api), {
+      params,
+    }),
+  PUT: (api, params) => axios.put(getApiUrl(api), params),
+  POST: (api, params) => axios.post(getApiUrl(api), params),
+  DELETE: (api, params) =>
+    axios.delete(getApiUrl(api), {
+      params,
+    }),
+};
 
-export function POST(
+export function REQ<REQ_T = any, RES_T = any>(
   api: keyof typeof apiObject,
-  data: any,
-): Promise<AxiosResponse<any>> {
-  return axios.post(getApiUrl(api), data);
+  data: REQ_T | null = null,
+): Promise<AxiosResponse<RES_T>> {
+  return REQUESTS[apiObject[api][0] as RequestMethod](api, data);
 }
 
 // Match server package
@@ -66,22 +63,22 @@ function getDataOrNull(data: any) {
   return data ?? null;
 }
 
-export const handleRequest = async (
-  request: Promise<AxiosResponse<any>>,
+export async function handleRequest<T = any>(
+  request: Promise<AxiosResponse<ResponseType<T>>>,
   options?: {
     useOnAxiosError?: boolean;
     suppressMessageShow?: {
-      error?: boolean | ((data: any) => boolean);
+      error?: boolean | ((data: T) => boolean);
       axiosError?: boolean;
-      warning?: boolean | ((data: any) => boolean);
+      warning?: boolean | ((data: T) => boolean);
     };
-    onSuccess?: ((data: any) => void) | null;
-    onError?: ((data: any, msg: string) => void) | null;
-    onAxiosError?: ((data: any) => void) | null;
-    onWarning?: ((data: any, msg: string) => void) | null;
+    onSuccess?: ((data: T) => void) | null;
+    onError?: ((dataOrErr: T | AxiosError, msg: string) => void) | null;
+    onAxiosError?: ((err: AxiosError) => void) | null;
+    onWarning?: ((data: T, msg: string) => void) | null;
     onFinish?: (() => void) | null;
   },
-) => {
+) {
   try {
     const result = await request;
     switch (result.data.status) {
@@ -96,21 +93,7 @@ export const handleRequest = async (
         }
         options?.onError?.(
           getDataOrNull(result.data.data),
-          result.data.message,
-        );
-        break;
-      case StatusCode.WARNING:
-        if (
-          !getBoolean(
-            options?.suppressMessageShow?.warning,
-            getDataOrNull(result.data.data),
-          )
-        ) {
-          message.warning(result.data.message);
-        }
-        options?.onWarning?.(
-          getDataOrNull(result.data.data),
-          result.data.message,
+          result.data.message!,
         );
         break;
       case StatusCode.SUCCESS:
@@ -122,11 +105,11 @@ export const handleRequest = async (
     }
 
     if (options?.useOnAxiosError) {
-      options?.onAxiosError?.(e);
+      options?.onAxiosError?.(e as AxiosError);
     } else {
-      options?.onError?.(e, (e as AxiosError).message);
+      options?.onError?.(e as AxiosError, (e as AxiosError).message);
     }
   } finally {
     options?.onFinish?.();
   }
-};
+}

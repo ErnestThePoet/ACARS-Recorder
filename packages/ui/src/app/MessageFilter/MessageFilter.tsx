@@ -1,9 +1,6 @@
 import React, { useCallback, useState } from "react";
 import styles from "./MessageFilter.module.scss";
-import {
-  AcarsMessageFilterType,
-  StatisticsType,
-} from "@/modules/interface/acars.interface";
+import { AcarsMessageFilterType } from "@/modules/interface/acars.interface";
 import { Button, Collapse, Flex } from "antd";
 import {
   DeleteOutlined,
@@ -12,9 +9,14 @@ import {
 } from "@ant-design/icons";
 import MessageFilterControls from "./MessageFilterControls/MessageFilterControls";
 import { getTodayTimeRange } from "@/modules/utils/date-time.util";
-import { handleRequest, GET } from "@/modules/api/api";
+import { handleRequest, REQ } from "@/modules/api/api";
 import { Dayjs } from "dayjs";
 import { useWindowSize } from "@/modules/hooks/use-window-size";
+import {
+  GetStatisticsDto,
+  GetStatisticsFilters,
+  GetStatisticsResponse,
+} from "@/modules/api/api.interface";
 
 interface MessageFilterProps {
   queryLoading: boolean;
@@ -47,28 +49,29 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
     text: "",
   });
 
-  const [statistics, setStatistics] = useState<StatisticsType>({
-    freq: [],
-    label: [],
-    blockId: [],
-    regNo: [],
-    flightNo: [],
-    msgNo: [],
-    reassemblyStatus: [],
-    libacars: [],
-  });
+  const [statisticsFilters, setStatisticsFilters] =
+    useState<GetStatisticsFilters>({
+      freq: [],
+      label: [],
+      blockId: [],
+      regNo: [],
+      flightNo: [],
+      msgNo: [],
+      reassemblyStatus: [],
+      libacars: [],
+    });
 
   const updateStatistics = useCallback((startTime: Dayjs, endTime: Dayjs) => {
     setStatisticsLoading(true);
 
     handleRequest(
-      GET("ACARS_GET_STATISTICS", {
+      REQ<GetStatisticsDto, GetStatisticsResponse>("ACARS_GET_STATISTICS", {
         startS: startTime.unix(),
         endS: endTime.unix(),
       }),
       {
         onSuccess: data => {
-          setStatistics(data.filters);
+          setStatisticsFilters(data.filters);
         },
         onFinish: () => setStatisticsLoading(false),
       },
@@ -97,7 +100,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
           children: (
             <MessageFilterControls
               selectsLoading={statisticsLoading}
-              statistics={statistics}
+              statisticsFilters={statisticsFilters}
               filter={filter}
               onChange={e => {
                 setFilter(value => ({
@@ -122,13 +125,15 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
                     e.stopPropagation();
 
                     setFilter(value => ({
-                      ...value,
+                      startTime: value.startTime,
+                      endTime: value.endTime,
                       freq: [],
                       label: [],
                       blockId: [],
                       regNo: [],
                       flightNo: [],
                       msgNo: [],
+                      reassemblyStatus: [],
                       libacars: [],
                       text: "",
                     }));

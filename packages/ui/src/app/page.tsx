@@ -37,11 +37,15 @@ import {
   AcarsMessageFilterType,
 } from "@/modules/interface/acars.interface";
 import MessageFilter from "./MessageFilter/MessageFilter";
-import { getApiUrl, handleRequest, POST } from "@/modules/api/api";
+import { getApiUrl, handleRequest, REQ } from "@/modules/api/api";
 import { OrderDirection } from "@/modules/order-direction";
 import type { ResizeCallbackData } from "react-resizable";
 import { Resizable } from "react-resizable";
 import { useWindowSize } from "@/modules/hooks/use-window-size";
+import {
+  GetMessagesDto,
+  GetMessagesResponse,
+} from "@/modules/api/api.interface";
 
 const todayTimeRange = getTodayTimeRange();
 
@@ -92,10 +96,9 @@ const ResizableTitle = (
 export default function Home() {
   const windowSize = useWindowSize();
 
-  const [messages, setMessages] = useState<{
-    totalCount: number;
-    currentPageMessages: AcarsMessage[];
-  }>({
+  const [messages, setMessages] = useState<
+    NonNullable<GetMessagesResponse["data"]>
+  >({
     totalCount: 0,
     currentPageMessages: [],
   });
@@ -321,7 +324,7 @@ export default function Home() {
     setQueryLoading(true);
 
     handleRequest(
-      POST("ACARS_GET_MESSAGES", {
+      REQ<GetMessagesDto, GetMessagesResponse>("ACARS_GET_MESSAGES", {
         startS: queryFilter.current.startTime.unix(),
         endS: queryFilter.current.endTime.unix(),
         text: queryFilter.current.text,
