@@ -19,9 +19,11 @@ interface MessageFilterControlsProps {
 interface FilterSelectType {
   key: keyof GetStatisticsFilters;
   label: string;
-  nullLabel?: React.ReactNode;
-  renderValue?: (value: string | number | boolean | null) => React.ReactNode;
+  nullLabel?: string;
+  renderValue?: (value: string | number | boolean) => string;
 }
+
+const SELECT_NULL_VALUE = "__null__";
 
 const FILTER_SELECTS: FilterSelectType[] = [
   {
@@ -62,15 +64,15 @@ const FILTER_SELECTS: FilterSelectType[] = [
 
 function renderFilterOptionLabel(
   filterSelectInfo: FilterSelectType,
-  value: string | number | boolean | null,
-): React.ReactNode {
-  return value === null
+  value: string | number | boolean,
+): string {
+  return value === SELECT_NULL_VALUE
     ? filterSelectInfo.nullLabel !== undefined
       ? filterSelectInfo.nullLabel
       : "(Null)"
     : filterSelectInfo.renderValue
     ? filterSelectInfo.renderValue(value)
-    : value;
+    : value.toString();
 }
 
 const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
@@ -113,24 +115,37 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
                 mode="multiple"
                 allowClear
                 options={statisticsFilters[x.key].map(item => ({
-                  label: renderFilterOptionLabel(x, item.value),
-                  value: item.value,
+                  label: renderFilterOptionLabel(
+                    x,
+                    item.value ?? SELECT_NULL_VALUE,
+                  ),
+                  value: item.value ?? SELECT_NULL_VALUE,
+                  count: item.count,
                 }))}
-                optionRender={(_, { index }) => (
-                  <Flex gap={5}>
-                    <span>
-                      {renderFilterOptionLabel(
-                        x,
-                        statisticsFilters[x.key][index].value,
-                      )}
-                    </span>
-                    <span>({statisticsFilters[x.key][index].count})</span>
-                  </Flex>
+                optionRender={({ data }) => {
+                  const { value, count } = data;
+                  return (
+                    <Flex gap={5}>
+                      <span>{renderFilterOptionLabel(x, value)}</span>
+                      <span>({count})</span>
+                    </Flex>
+                  );
+                }}
+                filterOption={(inputValue, option) => {
+                  if (!option) {
+                    return false;
+                  }
+
+                  return renderFilterOptionLabel(x, option.value)
+                    .toLowerCase()
+                    .includes(inputValue.toLowerCase());
+                }}
+                value={filter[x.key].map(x =>
+                  x === null ? SELECT_NULL_VALUE : x,
                 )}
-                value={filter[x.key]}
                 onChange={e =>
                   onChange({
-                    [x.key]: e,
+                    [x.key]: e.map(x => (x === SELECT_NULL_VALUE ? null : x)),
                   })
                 }
               />
