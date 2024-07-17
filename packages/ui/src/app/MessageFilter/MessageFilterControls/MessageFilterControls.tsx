@@ -6,6 +6,10 @@ import {
 import { DatePicker, Flex, Input, Select, Spin } from "antd";
 import styles from "./MessageFilterControls.module.scss";
 import { useWindowSize } from "@/modules/hooks/use-window-size";
+import {
+  getReassemblyStatusString,
+  ReassemblyStatus,
+} from "@/modules/reassembly";
 
 interface MessageFilterControlsProps {
   selectsLoading: boolean;
@@ -45,6 +49,11 @@ const FILTER_SELECTS: FilterSelectType[] = [
   {
     key: "msgNo",
     label: "Msg No",
+  },
+  {
+    key: "reassemblyStatus",
+    label: "Asm",
+    renderValue: value => getReassemblyStatusString(value as ReassemblyStatus),
   },
   {
     key: "libacars",

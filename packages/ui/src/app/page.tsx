@@ -135,6 +135,7 @@ export default function Home() {
     regNo: [],
     flightNo: [],
     msgNo: [],
+    reassemblyStatus: [],
     libacars: [],
     text: "",
   });
@@ -330,6 +331,7 @@ export default function Home() {
         regNo: queryFilter.current.regNo,
         flightNo: queryFilter.current.flightNo,
         msgNo: queryFilter.current.msgNo,
+        reassemblyStatus: queryFilter.current.reassemblyStatus,
         libacars: queryFilter.current.libacars,
         pageIndex: paginationStateRef.current.currentPage - 1,
         pageSize: paginationStateRef.current.pageSize,
@@ -420,6 +422,7 @@ export default function Home() {
                       regNo: queryFilter.current.regNo,
                       flightNo: queryFilter.current.flightNo,
                       msgNo: queryFilter.current.msgNo,
+                      reassemblyStatus: queryFilter.current.reassemblyStatus,
                       libacars: queryFilter.current.libacars,
                     }),
                   },

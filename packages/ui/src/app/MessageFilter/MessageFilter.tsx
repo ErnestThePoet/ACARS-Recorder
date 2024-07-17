@@ -42,6 +42,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
     regNo: [],
     flightNo: [],
     msgNo: [],
+    reassemblyStatus: [],
     libacars: [],
     text: "",
   });
@@ -53,6 +54,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
     regNo: [],
     flightNo: [],
     msgNo: [],
+    reassemblyStatus: [],
     libacars: [],
   });
 

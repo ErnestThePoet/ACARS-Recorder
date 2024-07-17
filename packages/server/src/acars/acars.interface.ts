@@ -17,7 +17,7 @@ export interface GetStatisticsResponse {
     flightNo: ValueCount<AcarsEntity["flightNo"]>[];
     msgNo: ValueCount<AcarsEntity["msgNo"]>[];
     // ack: ValueCount<AcarsEntity["ack"]>[];
-    // reassemblyStatus: ValueCount<AcarsEntity["reassemblyStatus"]>[];
+    reassemblyStatus: ValueCount<AcarsEntity["reassemblyStatus"]>[];
     libacars: ValueCount<boolean>[];
   };
 }

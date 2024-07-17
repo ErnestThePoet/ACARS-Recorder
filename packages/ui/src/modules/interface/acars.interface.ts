@@ -32,6 +32,7 @@ export interface AcarsMessageFilterType {
   regNo: AcarsMessage["regNo"][];
   flightNo: AcarsMessage["flightNo"][];
   msgNo: AcarsMessage["msgNo"][];
+  reassemblyStatus: AcarsMessage["reassemblyStatus"][];
   libacars: boolean[];
   text: string;
 }
@@ -48,5 +49,6 @@ export interface StatisticsType {
   regNo: ValueCount<AcarsMessage["regNo"]>[];
   flightNo: ValueCount<AcarsMessage["flightNo"]>[];
   msgNo: ValueCount<AcarsMessage["msgNo"]>[];
+  reassemblyStatus: ValueCount<AcarsMessage["reassemblyStatus"]>[];
   libacars: ValueCount<boolean>[];
 }

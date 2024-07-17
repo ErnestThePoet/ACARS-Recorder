@@ -9,6 +9,7 @@ import {
 } from "class-validator";
 import { AcarsEntity } from "./acars.model";
 import { OrderDirection } from "src/common/order-direction";
+import { ReassemblyStatus } from "src/common/reassembly";
 
 export class ExportMessagesDto {
   @IsNumber(
@@ -103,14 +104,14 @@ export class ExportMessagesDto {
   // })
   // ack: AcarsEntity["ack"][];
 
-  // @IsArray({
-  //   message: '"reassemblyStatus" field invalid',
-  // })
-  // @IsEnum(ReassemblyStatus, {
-  //   message: '"reassemblyStatus" field invalid',
-  //   each: true,
-  // })
-  // reassemblyStatus: AcarsEntity["reassemblyStatus"][];
+  @IsArray({
+    message: '"reassemblyStatus" field invalid',
+  })
+  @IsEnum(ReassemblyStatus, {
+    message: '"reassemblyStatus" field invalid',
+    each: true,
+  })
+  reassemblyStatus: AcarsEntity["reassemblyStatus"][];
 
   @IsArray({
     message: '"libacars" field invalid',

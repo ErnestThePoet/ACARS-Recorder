@@ -161,7 +161,7 @@ export class AcarsService {
       getFilterField("flightNo"),
       getFilterField("msgNo"),
       // getFilterField("ack"),
-      // getFilterField("reassemblyStatus"),
+      getFilterField("reassemblyStatus"),
       getFilterField("libacars"),
     ]);
 
@@ -230,25 +230,29 @@ export class AcarsService {
     });
   }
 
+  private escapeQuotes(text: string): string {
+    return text.replaceAll('"', '""');
+  }
+
   // Ugly but hopefully ensures max performance
   private getCsvRow(acars: Acars): string {
     return (
-      (acars.text ? `"${acars.text}"` : "") +
+      (acars.text ? `"${this.escapeQuotes(acars.text)}"` : "") +
       `,${formatSTimeyMdHms(acars.time)}` +
       `,${formatSTimeyMdHms(acars.time, LOCAL_TIMEZONE_OFFSET)}` +
       `,${acars.freq}` +
       `,${acars.level}` +
       `,${acars.error}` +
-      `,"${acars.mode}"` +
-      `,"${acars.label}"` +
-      (acars.subLabel ? `,"${acars.subLabel}"` : ",") +
-      (acars.blockId ? `,"${acars.blockId}"` : ",") +
-      (acars.ack ? `,"${acars.ack}"` : ",NACK") +
-      (acars.regNo ? `,"${acars.regNo}"` : ",") +
-      (acars.flightNo ? `,"${acars.flightNo}"` : ",") +
-      (acars.msgNo ? `,"${acars.msgNo}"` : ",") +
+      `,"${this.escapeQuotes(acars.mode)}"` +
+      `,"${this.escapeQuotes(acars.label)}"` +
+      (acars.subLabel ? `,"${this.escapeQuotes(acars.subLabel)}"` : ",") +
+      (acars.blockId ? `,"${this.escapeQuotes(acars.blockId)}"` : ",") +
+      (acars.ack ? `,"${this.escapeQuotes(acars.ack)}"` : ",NACK") +
+      (acars.regNo ? `,"${this.escapeQuotes(acars.regNo)}"` : ",") +
+      (acars.flightNo ? `,"${this.escapeQuotes(acars.flightNo)}"` : ",") +
+      (acars.msgNo ? `,"${this.escapeQuotes(acars.msgNo)}"` : ",") +
       `,${getReassemblyStatusString(acars.reassemblyStatus)}` +
-      (acars.libacars ? `,"${acars.libacars}"` : ",") +
+      (acars.libacars ? `,"${this.escapeQuotes(acars.libacars)}"` : ",") +
       "\n"
     );
   }
