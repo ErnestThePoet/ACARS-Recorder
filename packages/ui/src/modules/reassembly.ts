@@ -30,6 +30,28 @@ export function getReassemblyStatusString(
   }
 }
 
+export function getReassemblyStatusChar(
+  reassemblyStatus: ReassemblyStatus,
+): string {
+  switch (reassemblyStatus) {
+    case ReassemblyStatus.COMPLETE:
+      return "C";
+    case ReassemblyStatus.IN_PROGRESS:
+      return "P";
+    case ReassemblyStatus.SKIPPED:
+      return "S";
+    case ReassemblyStatus.DUPLICATE:
+      return "D";
+    case ReassemblyStatus.FRAG_OUT_OF_SEQUENCE:
+      return "O";
+    case ReassemblyStatus.ARGS_INVALID:
+      return "I";
+    case ReassemblyStatus.UNKNOWN:
+    default:
+      return "U";
+  }
+}
+
 function charCode(char: string) {
   return char.charCodeAt(0);
 }

@@ -27,7 +27,11 @@ import {
 } from "@/modules/constants";
 import classNames from "classnames";
 import { noto_Sans_Mono } from "./fonts";
-import { getReassemblyStatusString } from "@/modules/reassembly";
+import {
+  getReassemblyStatusChar,
+  getReassemblyStatusString,
+  isDownLink,
+} from "@/modules/reassembly";
 import {
   AcarsMessage,
   AcarsMessageFilterType,
@@ -262,7 +266,15 @@ export default function Home() {
       width: 90,
       render: (blockId, record) => (
         <Flex vertical align="center" gap={6}>
-          {blockId && <Tag color="purple">{blockId}</Tag>}
+          {blockId && (
+            <Tooltip title={isDownLink(blockId) ? "Downlink" : "Uplink"}>
+              <Tag
+                className={styles.withTooltip}
+                color={isDownLink(blockId) ? "purple" : "orange"}>
+                {blockId}
+              </Tag>
+            </Tooltip>
+          )}
           {record.msgNo && <Tag color="cyan">{record.msgNo}</Tag>}
         </Flex>
       ),
@@ -277,9 +289,7 @@ export default function Home() {
           <span>Error: {record.error}</span>
           <span>Mode: {record.mode}</span>
           <span>ACK: {record.ack ?? "NACK"}</span>
-          <span>
-            Reasm: {getReassemblyStatusString(record.reassemblyStatus)}
-          </span>
+          <span>Asm: {getReassemblyStatusString(record.reassemblyStatus)}</span>
         </Flex>
       ),
     },
@@ -506,9 +516,30 @@ export default function Home() {
                       }`}
                     </div>
 
-                    <div>{`L:${item.level} E:${item.error} M:${item.mode}${
-                      item.blockId ? " BID:" + item.blockId : ""
-                    } ACK:${item.ack ?? "NACK"}`}</div>
+                    <div>
+                      {`L:${item.level} E:${item.error} M:${item.mode} `}
+                      {item.blockId && (
+                        <Tooltip
+                          title={
+                            isDownLink(item.blockId) ? "Downlink" : "Uplink"
+                          }>
+                          <span className={styles.withTooltip}>
+                            {`BID:${item.blockId} `}
+                          </span>
+                        </Tooltip>
+                      )}
+                      {`ACK:${item.ack ?? "NACK"} `}
+                      <Tooltip
+                        title={getReassemblyStatusString(
+                          item.reassemblyStatus,
+                        )}>
+                        <span className={styles.withTooltip}>
+                          {`A:${getReassemblyStatusChar(
+                            item.reassemblyStatus,
+                          )}`}
+                        </span>
+                      </Tooltip>
+                    </div>
                   </div>
 
                   <div className={styles.divAcarsText}>
