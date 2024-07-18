@@ -1,5 +1,5 @@
 # ACARS-Recorder
-If you use [acarsdec](https://github.com/TLeconte/acarsdec) to decode ACARS messages and want a modern platform where you can store and view all the messages you received, this is what may light you up.
+If you use [acarsdec](https://github.com/TLeconte/acarsdec) to decode ACARS messages and want a modern, powerful platform where you can store and view all the messages you received, this is what may light you up.
 
 # Features
 - Modern architecture
