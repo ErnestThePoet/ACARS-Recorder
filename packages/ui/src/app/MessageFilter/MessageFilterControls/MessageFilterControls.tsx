@@ -89,11 +89,13 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
         showTime
         placement={windowSize.vertical ? "bottomRight" : "bottomLeft"}
         value={[filter.startTime, filter.endTime]}
-        onChange={range => {
-          if (range && range[0] && range[1]) {
+        onCalendarChange={range => {
+          if (range[0] && range[1]) {
+            const isReversed = range[0].diff(range[1]) > 0;
+
             onChange({
-              startTime: range[0],
-              endTime: range[1],
+              startTime: isReversed ? range[1] : range[0],
+              endTime: isReversed ? range[0] : range[1],
             });
           }
         }}
@@ -168,4 +170,4 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
   );
 };
 
-export default MessageFilterControls;
+export default React.memo(MessageFilterControls);
