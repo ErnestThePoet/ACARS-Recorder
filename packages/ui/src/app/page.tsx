@@ -344,6 +344,27 @@ export default function Home() {
       {
         onSuccess: data => {
           setMessages(data);
+
+          if (
+            paginationStateRef.current.currentPage !== 1 &&
+            data.totalCount <=
+              (paginationStateRef.current.currentPage - 1) *
+                paginationStateRef.current.pageSize
+          ) {
+            const newPage =
+              Math.trunc(
+                (data.totalCount - 1) / paginationStateRef.current.pageSize,
+              ) + 1;
+
+            paginationStateRef.current.currentPage = newPage;
+
+            setPaginationState(value => ({
+              ...value,
+              currentPage: newPage,
+            }));
+
+            syncMessages();
+          }
         },
         onFinish: () => setQueryLoading(false),
       },
