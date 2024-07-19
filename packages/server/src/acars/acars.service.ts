@@ -270,7 +270,7 @@ export class AcarsService {
     const FIND_BLOCK_SIZE = 10000;
 
     const findIterationCount =
-      Math.floor((totalCount - 1) / FIND_BLOCK_SIZE) + 1;
+      Math.trunc((totalCount - 1) / FIND_BLOCK_SIZE) + 1;
 
     res.setHeader("Content-Type", "text/csv");
     res.setHeader(
