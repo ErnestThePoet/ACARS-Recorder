@@ -14,6 +14,7 @@ interface MessageFilterControlsProps {
   statisticsFilters: GetStatisticsFilters;
   filter: AcarsMessageFilterType;
   onChange: (filterPatch: Partial<AcarsMessageFilterType>) => void;
+  onTextPressEnter: () => void;
 }
 
 interface FilterSelectType {
@@ -80,6 +81,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
   statisticsFilters,
   filter,
   onChange,
+  onTextPressEnter,
 }) => {
   const windowSize = useWindowSize();
 
@@ -165,6 +167,7 @@ const MessageFilterControls: React.FC<MessageFilterControlsProps> = ({
             text: e.target.value,
           });
         }}
+        onPressEnter={onTextPressEnter}
       />
     </Flex>
   );

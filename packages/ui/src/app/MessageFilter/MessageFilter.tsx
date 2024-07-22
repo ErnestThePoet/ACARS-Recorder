@@ -115,6 +115,7 @@ const MessageFilter: React.FC<MessageFilterProps> = ({
                   updateStatistics(startTime, endTime);
                 }
               }}
+              onTextPressEnter={() => onFilter(filter)}
             />
           ),
           extra: (
